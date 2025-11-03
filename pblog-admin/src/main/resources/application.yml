@@ -1,0 +1,4 @@
+# pblog-user/src/main/resources/application.yml（基础配置，仅指定激活环境）
+spring:
+  profiles:
+    active: admin  # 激活 user 环境的配置文件

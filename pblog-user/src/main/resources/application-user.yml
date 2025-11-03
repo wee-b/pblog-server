@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/pblog?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Redis 配置
+  data:
+    redis:
+      # 基础连接信息（替代原 spring.redis.host/port/password）
+      host: localhost       # 替代 spring.redis.host
+      port: 6379            # 替代 spring.redis.port
+      database: 0           # 替代 spring.redis.database
+
+      # 超时配置（替代原 spring.redis.timeout）
+      timeout: 5000ms       # 连接、读写超时时间
+
+      # 客户端配置（Lettuce 客户端，替代原 spring.redis.lettuce）
+      lettuce:
+        pool:
+          max-active: 16    # 最大连接数
+          max-idle: 8       # 最大空闲连接
+          min-idle: 4       # 最小空闲连接
+          max-wait: 2000ms  # 最大阻塞等待时间
+        client-options:
+          protocol-version: RESP3  # Redis 8.x 推荐的 RESP3 协议
+          timeout-options:
+            connect-timeout: 3000ms
+            read-timeout: 3000ms
+            write-timeout: 3000ms
+        ssl:
+          enabled: false     # 是否启用 TLS 加密
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径
+  type-aliases-package: com.pblog.entity  # 实体类包路径
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 日志
+
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+
+login:
+  time:
+    key: 10000
