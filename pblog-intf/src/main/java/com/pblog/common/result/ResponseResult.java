@@ -42,4 +42,8 @@ public class ResponseResult<T> {
     public static <T> ResponseResult<T> error(int code, String message) {
         return new ResponseResult<>(code, message);
     }
+
+    public static <T> ResponseResult<T> error(String message) {
+        return new ResponseResult<>(400, message);
+    }
 }

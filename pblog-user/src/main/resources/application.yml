@@ -1,7 +1,56 @@
 
+server:
+  port: 8080
+
+
 # pblog-user/src/main/resources/application-user.yml（基础配置，仅指定激活环境）
 spring:
   profiles:
     active: user
 
+  datasource:
+    url: jdbc:mysql://${bin.datasource.host}:${bin.datasource.port}/${bin.datasource.database}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${bin.datasource.username}
+    password: ${bin.datasource.password}
+    driver-class-name: ${bin.datasource.driver-class-name}
+
+  # Redis 配置
+  data:
+    redis:
+      host: ${bin.redis.host}
+      port: ${bin.redis.port}
+      database: ${bin.redis.database}
+
+  # 邮箱登录
+  mail:
+    host: smtp.qq.com  # QQ邮箱SMTP服务器（固定）
+    port: 465  # SSL加密专用端口（必须为465，不能用587）
+    username: ${bin.mail.username}  # 你的QQ邮箱（如2503457798@qq.com）
+    password: ${bin.mail.password}  # 你的授权码（ksvvvlqkvgwyeaei，确认未过期）
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true  # 启用SSL加密（关键）
+          socketFactoryClass: javax.net.ssl.SSLSocketFactory  # SSL工厂类（配合465端口）
+          socketFactory.port: 465  # 明确指定SSL工厂端口（避免端口混乱）
+    default-encoding: UTF-8
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径
+  type-aliases-package: com.pblog.entity  # 实体类包路径
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 日志
+
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+
+login:
+  time:
+    key: 10000
 

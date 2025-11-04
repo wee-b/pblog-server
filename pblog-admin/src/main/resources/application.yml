@@ -1,4 +1,41 @@
-# pblog-user/src/main/resources/application.yml（基础配置，仅指定激活环境）
+
+server:
+  port: 8081
+
+
+# pblog-user/src/main/resources/application-user.yml（基础配置，仅指定激活环境）
 spring:
   profiles:
-    active: admin  # 激活 user 环境的配置文件
+    active: admin
+
+  datasource:
+    url: jdbc:mysql://${bin.datasource.host}:${bin.datasource.port}/${bin.datasource.database}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${bin.datasource.username}
+    password: ${bin.datasource.password}
+    driver-class-name: ${bin.datasource.driver-class-name}
+
+  # Redis 配置
+  data:
+    redis:
+      host: ${bin.redis.host}
+      port: ${bin.redis.port}
+      database: ${bin.redis.database}
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径
+  type-aliases-package: com.pblog.entity  # 实体类包路径
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 日志
+
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+
+login:
+  time:
+    key: 10000
+

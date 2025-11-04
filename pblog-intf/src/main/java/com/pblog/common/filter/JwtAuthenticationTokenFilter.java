@@ -1,7 +1,6 @@
 package com.pblog.common.filter;
 
 import com.pblog.common.constant.RedisConstants;
-
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.utils.JjwtUtil;
 import jakarta.servlet.FilterChain;
@@ -17,38 +16,48 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    private final StringRedisTemplate stringRedisTemplate;
+    // 白名单路径常量列表，集中管理无需验证的路径
+    private static final List<String> WHITE_LIST = Arrays.asList(
+            "/hello",
+            "/user/passwordLogin",
+            "/user/emailLogin",
+            "/user/register",
+            "/user/emailCodeLogin",
+            "/code/email/sendEmail"
+            // 可根据需要添加更多白名单路径，如注册、验证码等
+            // "/user/register",
+            // "/captcha/generate"
+    );
 
+    private final StringRedisTemplate stringRedisTemplate;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationTokenFilter(StringRedisTemplate stringRedisTemplate,UserDetailsService userDetailsService) {
+    public JwtAuthenticationTokenFilter(StringRedisTemplate stringRedisTemplate, UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
         this.stringRedisTemplate = stringRedisTemplate;
-        log.info("JwtAuthenticationTokenFilter 已被 Spring 实例化"); // 添加这行
+        log.info("JwtAuthenticationTokenFilter 已被 Spring 实例化");
     }
-
-
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 强制打印请求信息（不受日志框架影响）
         String requestUri = request.getRequestURI();
         log.info("=== JWT过滤器收到请求：URI=" + requestUri);
 
-        // 白名单判断（简化，只判断/hello和/login）
-        if ("/hello".equals(requestUri) || "/user/passwordLogin".equals(requestUri)) {
+        // 检查是否为白名单路径
+        if (WHITE_LIST.contains(requestUri)) {
             log.info("=== 白名单路径，直接放行：" + requestUri);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 非白名单路径的Token验证逻辑...（保留原有代码）
+        // 非白名单路径的Token验证逻辑
         System.out.println("=== 非白名单路径，执行Token验证：" + requestUri);
 
         // 1. 获取token
@@ -59,6 +68,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
         // 3. 验证token并获取用户ID
         int userId = JjwtUtil.verifyLoginToken(token);
 
@@ -100,16 +110,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
         // 8. 刷新token有效期（滑动窗口策略）
         try {
-            // 生成新的token（包含当前时间戳）
             String newToken = JjwtUtil.getLoginToken(userId);
-            // 更新Redis中的token，设置新的过期时间
             stringRedisTemplate.opsForValue().set(redisKey, newToken);
-            // 将新token通过响应头返回给前端
             response.setHeader("token", newToken);
             log.info("用户token已刷新: userId={}", userId);
         } catch (Exception e) {
             log.error("刷新token失败: userId={}", userId, e);
-            // 刷新失败不影响当前请求处理，继续放行
         }
 
         // 9. 放行

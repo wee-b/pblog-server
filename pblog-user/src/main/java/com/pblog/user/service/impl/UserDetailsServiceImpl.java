@@ -1,6 +1,5 @@
 package com.pblog.user.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.entity.User;
