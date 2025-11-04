@@ -1,149 +1,89 @@
 package com.pblog.common.entity;
 
-import java.util.Date;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
- * 博客友情链接表，管理所有友情链接信息(FriendLink)实体类
- *
- * @author makejava
- * @since 2025-08-18 17:10:41
+ * 友情链接表
+ * @TableName pb_friend_link
  */
+@TableName(value = "pb_friend_link")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class FriendLink implements Serializable {
-    private static final long serialVersionUID = 678836755648712261L;
-/**
+    private static final long serialVersionUID = 1L;
+
+    /**
      * 友链ID，主键
      */
-    private Long id;
-/**
-     * 友链网站名称
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+
+    /**
+     * 网站名称
      */
     private String siteName;
-/**
-     * 友链网站URL地址
+
+    /**
+     * 网站URL
      */
     private String siteUrl;
-/**
-     * 友链网站logo图片URL
+
+    /**
+     * 网站LOGO
      */
     private String logo;
-/**
-     * 友链网站简介
+
+    /**
+     * 网站简介
      */
     private String description;
-/**
-     * 联系人邮箱，用于沟通
+
+    /**
+     * 联系人邮箱
      */
     private String contactEmail;
-/**
-     * 友链状态：0-待审核，1-已通过，2-已拒绝
+
+    /**
+     * 状态（0待审核 1已通过 2已拒绝）
      */
-    private Integer status;
-/**
-     * 展示排序，值越小越靠前
+    private String status;
+
+    /**
+     * 显示顺序
      */
     private Integer sortOrder;
-/**
-     * 申请时间
+
+    /**
+     * 审核人ID（关联pb_user）
      */
-    private Date createdAt;
-/**
-     * 状态更新时间
+    private Integer approvedBy;
+
+    /**
+     * 删除标志（0存在 1删除）
      */
-    private Date updatedAt;
-/**
-     * 审核人ID，关联pb_user表
+    @TableLogic
+    private String delFlag;
+
+    /**
+     * 创建者
      */
-    private Long approvedBy;
+    private Integer createBy;
 
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getSiteName() {
-        return siteName;
-    }
-
-    public void setSiteName(String siteName) {
-        this.siteName = siteName;
-    }
-
-    public String getSiteUrl() {
-        return siteUrl;
-    }
-
-    public void setSiteUrl(String siteUrl) {
-        this.siteUrl = siteUrl;
-    }
-
-    public String getLogo() {
-        return logo;
-    }
-
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Integer getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(Integer sortOrder) {
-        this.sortOrder = sortOrder;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Long getApprovedBy() {
-        return approvedBy;
-    }
-
-    public void setApprovedBy(Long approvedBy) {
-        this.approvedBy = approvedBy;
-    }
-
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.UPDATE)
+    private LocalDateTime updateTime;
 }
-
