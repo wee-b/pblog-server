@@ -1,6 +1,7 @@
 package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.pblog.common.ExceptionHandler.BusinessException;
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.entity.User;
 import com.pblog.user.mapper.UserMapper;
@@ -29,11 +30,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         log.info("loadUserByUsername");
         // 查询用户信息
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username);
+        queryWrapper.eq("id", username);
         User user = userMapper.selectOne(queryWrapper);
 
         // 如果没有查询到用户信息就抛出异常
         if(Objects.isNull(user)){
+            // TODO 报错不走ExceptionHandler
             throw new UsernameNotFoundException("用户名或密码错误");
         }
         // TODO 查询对应的权限信息

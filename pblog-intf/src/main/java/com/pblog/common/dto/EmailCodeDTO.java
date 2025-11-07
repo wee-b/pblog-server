@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmailCodeLoginDTO {
+public class EmailCodeDTO {
     private String email;
     private String code;
 }

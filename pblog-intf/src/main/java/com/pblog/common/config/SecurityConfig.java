@@ -32,14 +32,10 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-//    private final StringRedisTemplate stringRedisTemplate;
     @Autowired
     private UserDetailsService userDetailsService;
 
     private final StringRedisTemplate redisTemplate;
-
-//    @Autowired
-//    private AuthenticationEntryPointImpl authenticationEntryPoint;
 
     @Autowired
     private AuthenticationEntryPoint authenticationEntryPoint;

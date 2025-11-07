@@ -57,8 +57,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 非白名单路径的Token验证逻辑
-        System.out.println("=== 非白名单路径，执行Token验证：" + requestUri);
+
+        log.info("=== 非白名单路径，执行Token验证：" + requestUri);
 
         // 1. 获取token
         String token = request.getHeader("token");
@@ -108,15 +108,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 8. 刷新token有效期（滑动窗口策略）
-        try {
-            String newToken = JjwtUtil.getLoginToken(userId);
-            stringRedisTemplate.opsForValue().set(redisKey, newToken);
-            response.setHeader("token", newToken);
-            log.info("用户token已刷新: userId={}", userId);
-        } catch (Exception e) {
-            log.error("刷新token失败: userId={}", userId, e);
-        }
+
+
+        // 8. 刷新token有效期（滑动窗口策略）测试阶段注释代码
+//        try {
+//            String newToken = JjwtUtil.getLoginToken(userId);
+//            stringRedisTemplate.opsForValue().set(redisKey, newToken);
+//            response.setHeader("token", newToken);
+//            log.info("用户token已刷新: userId={}", userId);
+//        } catch (Exception e) {
+//            log.error("刷新token失败: userId={}", userId, e);
+//        }
 
         // 9. 放行
         filterChain.doFilter(request, response);
