@@ -6,6 +6,7 @@ import com.pblog.common.vo.UserInfoVO;
 import com.pblog.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class UserController {
 
 
     @PostMapping("/passwordLogin")
-    public ResponseResult<Map<String,String>> passwordLogin(@RequestBody PasswordLoginDTO passwordLoginDTO) throws Exception {
+    public ResponseResult<Map<String,String>> passwordLogin(@RequestBody PasswordLoginDTO passwordLoginDTO){
         log.info("收到密码登录请求:{}", passwordLoginDTO);
         Map<String,String> map =  userService.passwordLogin(passwordLoginDTO);
         return ResponseResult.success(map);
@@ -32,7 +33,7 @@ public class UserController {
      * 邮箱登录
      */
     @PostMapping("/emailLogin")
-    public ResponseResult<Map<String,String>> emailLogin(@RequestBody EmailLoginDTO emailLoginDTO) throws Exception {
+    public ResponseResult<Map<String,String>> emailLogin(@RequestBody EmailLoginDTO emailLoginDTO){
         log.info("收到邮箱密码登录请求:{}", emailLoginDTO);
         Map<String,String> map =  userService.emailLogin(emailLoginDTO);
         return ResponseResult.success(map);
@@ -42,7 +43,7 @@ public class UserController {
      * 邮箱验证码登录
      */
     @PostMapping("/emailCodeLogin")
-    public ResponseResult emailCodeLogin(@RequestBody EmailCodeDTO emailCodeDTO) throws Exception {
+    public ResponseResult emailCodeLogin(@RequestBody EmailCodeDTO emailCodeDTO){
         log.info("收到邮箱验证码登录请求:{}", emailCodeDTO);
         Map<String,String> map =  userService.emailCodeLogin(emailCodeDTO);
         return ResponseResult.success(map);
@@ -55,7 +56,7 @@ public class UserController {
      * @throws Exception
      */
     @PostMapping("/register")
-    public ResponseResult register(@RequestBody RegisterDTO registerDTO) throws Exception {
+    public ResponseResult register(@RequestBody RegisterDTO registerDTO){
         String username = userService.register(registerDTO);
         return ResponseResult.success(username);
     }
@@ -64,7 +65,7 @@ public class UserController {
      * 重置密码，必须要有邮箱，未登陆状态下
      */
     @PutMapping("/resetPassword")
-    public ResponseResult resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) throws Exception {
+    public ResponseResult resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
         String username = userService.resetPassword(resetPasswordDTO);
         return ResponseResult.success(username);
     }
@@ -74,7 +75,7 @@ public class UserController {
      * 修改用户基本信息,登录状态下
      */
     @PutMapping("/updateInfo")
-    public ResponseResult updateInfo(@RequestBody UserDTO userDTO) throws Exception {
+    public ResponseResult updateInfo(@RequestBody UserDTO userDTO){
         String username = userService.updateInfo(userDTO);
         return ResponseResult.success(username);
     }
@@ -83,7 +84,7 @@ public class UserController {
      * 修改/添加邮箱,登录状态下
      */
     @PutMapping("/updateEmail")
-    public ResponseResult updateEmail(@RequestBody EmailCodeDTO emailCodeDTO) throws Exception {
+    public ResponseResult updateEmail(@RequestBody EmailCodeDTO emailCodeDTO){
         String username = userService.updateEmail(emailCodeDTO);
         return ResponseResult.success(username);
     }
@@ -92,7 +93,7 @@ public class UserController {
      * 修改密码,登陆状态下,前端传入明文密码
      */
     @PutMapping("/forgetPassword")
-    public ResponseResult resetPassword(@RequestParam("newPassword")  String newPassword) throws Exception {
+    public ResponseResult resetPassword(@RequestParam("newPassword")  String newPassword){
         String username = userService.forgetPassword(newPassword);
         return ResponseResult.success(username);
     }
@@ -101,7 +102,7 @@ public class UserController {
      * 账号注销
      */
     @PostMapping("/logout")
-    public ResponseResult logout() throws Exception {
+    public ResponseResult logout(){
         String res = userService.logout();
         return ResponseResult.success(res);
     }
@@ -110,7 +111,7 @@ public class UserController {
      * 账号注销
      */
     @DeleteMapping("/deleteAccount")
-    public ResponseResult deleteAccount(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseResult deleteAccount(HttpServletRequest request, HttpServletResponse response){
         String res = userService.deleteAccount(request,response);
         return ResponseResult.success(res);
     }
@@ -119,7 +120,7 @@ public class UserController {
      * 获取用户资料
      */
     @GetMapping("/getUserInfo")
-    public ResponseResult<UserInfoVO> getUserInfo() throws Exception {
+    public ResponseResult<UserInfoVO> getUserInfo(){
         UserInfoVO userInfo = userService.getUserInfo();
         return ResponseResult.success(userInfo);
     }

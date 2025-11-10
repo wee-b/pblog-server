@@ -7,6 +7,6 @@ public class UserInfoVO {
 
     public String username;
     public String nickname;
-    public String avatar;
+    public String avatarUrl;
     public String bio;
 }

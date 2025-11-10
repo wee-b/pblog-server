@@ -20,6 +20,7 @@ spring:
       host: ${bin.redis.host}
       port: ${bin.redis.port}
       database: ${bin.redis.database}
+      password: ${bin.redis.password}
 
   # 邮箱登录
   mail:
@@ -36,6 +37,17 @@ spring:
           socketFactory.port: 465  # 明确指定SSL工厂端口（避免端口混乱）
     default-encoding: UTF-8
 
+    # 文件上传设置
+    servlet:
+      multipart:
+        max-file-size: 10MB  # 单个文件大小限制
+        max-request-size: 10MB  # 单次请求文件总大小限制
+
+minio:
+  endpoint: http://${bin.minio.host}:9000
+  access-key: ${bin.minio.access-key}
+  secret-key: ${bin.minio.secret-key}
+  bucket-name: ${bin.minio.bucket-name}
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径

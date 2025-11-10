@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public interface UserService {
-    Map<String,String> passwordLogin(PasswordLoginDTO passwordLoginDTO) throws Exception;
+    Map<String,String> passwordLogin(PasswordLoginDTO passwordLoginDTO);
 
     Map<String, String> emailLogin(EmailLoginDTO emailLoginDTO);
 

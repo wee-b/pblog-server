@@ -3,6 +3,7 @@ package com.pblog.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.pblog.common.ExceptionHandler.BusinessException;
+import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.dto.*;
 import com.pblog.common.entity.User;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,6 +35,11 @@ import java.util.Map;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
+
+    @Value("${minio.bucket-name}")
+    private String bucketName;
+    @Value("${minio.endpoint}")
+    private String minioEndpoint;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -184,6 +191,7 @@ public class UserServiceImpl implements UserService {
                 user.setUsername(username);
                 user.setPassword(encodedPassword);
                 user.setEmail(registerDTO.getEmail());
+                user.setAvatar(DefaultConstants.DEFAULT_AVATAR_FILENAME);
                 int rows = userMapper.insert(user);
 
                 if (rows > 0) {
@@ -313,6 +321,7 @@ public class UserServiceImpl implements UserService {
         User user = SecurityContextUtil.getUser();
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user, userInfoVO);
+        userInfoVO.setAvatarUrl(generateAvatarUrl(user.getAvatar()));
         return userInfoVO;
     }
 
@@ -355,6 +364,15 @@ public class UserServiceImpl implements UserService {
         // TODO 查询权限信息
         loginUser.setAuthorities(null);
         return loginUser;
+    }
+
+    /**
+     * 生成头像访问URL
+     */
+    private String generateAvatarUrl(String fileName) {
+        // 格式：MinIO地址/桶名/文件路径（需确保桶可公开访问或通过签名URL访问）
+        // 若桶为私有，需生成预签名URL（添加过期时间）
+        return minioEndpoint + "/" + bucketName + "/" + fileName;
     }
 
 }

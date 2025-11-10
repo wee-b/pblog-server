@@ -44,12 +44,10 @@ public class GlobalExceptionHandler {
 
     // -------------------------- 1. 处理自定义业务异常 --------------------------
     @ExceptionHandler(BusinessException.class)
-    public void handleBusinessException(BusinessException e, HttpServletResponse response) {
+    public ResponseResult handleBusinessException(BusinessException e, HttpServletResponse response) {
         log.info("业务异常：{}", e.getMessage());
         // 使用ResponseResult.error(String message)，默认code=400
-        ResponseResult<Void> result = ResponseResult.error(e.getMessage());
-        String jsonString = JSON.toJSONString(result);
-        WebUtils.renderString(response, jsonString);
+        return ResponseResult.error(e.getMessage());
     }
 
 
@@ -59,60 +57,53 @@ public class GlobalExceptionHandler {
      * 参数校验异常（@Valid注解触发）
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletResponse response) {
+    public ResponseResult handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletResponse response) {
         BindingResult bindingResult = e.getBindingResult();
         FieldError firstError = bindingResult.getFieldError();
         String message = firstError != null ? firstError.getDefaultMessage() : "参数校验失败";
         log.warn("参数校验异常：{}", message);
 
         // 使用默认错误code=400
-        ResponseResult<Void> result = ResponseResult.error(message);
-        String jsonString = JSON.toJSONString(result);
-        WebUtils.renderString(response, jsonString);
+        return ResponseResult.error(400, message);
+
     }
 
     /**
      * 请求方法不支持（如GET访问POST接口）
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public void handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletResponse response) {
+    public ResponseResult handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletResponse response) {
         String supportedMethods = String.join(",", e.getSupportedMethods() != null ? e.getSupportedMethods() : new String[0]);
         String message = String.format("不支持%s请求方法，支持的方法：%s", e.getMethod(), supportedMethods);
         log.warn("请求方法异常：{}", message);
 
         // 使用自定义code=405（Method Not Allowed）
-        ResponseResult<Void> result = ResponseResult.error(HttpStatus.METHOD_NOT_ALLOWED.value(), message);
-        String jsonString = JSON.toJSONString(result);
-        WebUtils.renderString(response, jsonString);
+        return ResponseResult.error(405, message);
     }
 
     /**
      * 接口不存在（404）
      */
     @ExceptionHandler(NoHandlerFoundException.class)
-    public void handleNoHandlerFoundException(NoHandlerFoundException e, HttpServletResponse response) {
+    public ResponseResult handleNoHandlerFoundException(NoHandlerFoundException e, HttpServletResponse response) {
         String message = "请求的接口不存在：" + e.getRequestURL();
         log.warn("接口不存在：{}", message);
 
         // 使用自定义code=404（Not Found）
-        ResponseResult<Void> result = ResponseResult.error(HttpStatus.NOT_FOUND.value(), message);
-        String jsonString = JSON.toJSONString(result);
-        WebUtils.renderString(response, jsonString);
+        return ResponseResult.error(404, message);
     }
 
     /**
      * 参数类型不匹配（如前端传字符串，后端需数字）
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public void handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletResponse response) {
+    public ResponseResult handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletResponse response) {
         String message = String.format("参数[%s]类型不匹配，期望类型：%s",
                 e.getName(),
                 e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "未知");
         log.warn("参数类型异常：{}", message);
 
-        ResponseResult<Void> result = ResponseResult.error(message);
-        String jsonString = JSON.toJSONString(result);
-        WebUtils.renderString(response, jsonString);
+        return ResponseResult.error(400, message);
     }
 
 
@@ -146,7 +137,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public void handleException(Exception e, HttpServletResponse response) {
-        log.error("未处理的异常", e);
+        // 关键：打印异常全类名+完整堆栈，明确未处理的异常类型
+        log.error("未处理的异常类型：{}，异常信息：{}",
+                e.getClass().getName(), e.getMessage(), e);
         ResponseResult<Void> result = ResponseResult.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "服务器内部错误，请稍后重试");
         String jsonString = JSON.toJSONString(result);
         WebUtils.renderString(response, jsonString);
