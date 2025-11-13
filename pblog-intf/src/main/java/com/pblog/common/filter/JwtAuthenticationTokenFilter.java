@@ -30,7 +30,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/user/emailLogin",
             "/user/register",
             "/user/emailCodeLogin",
-            "/code/email/sendEmail"
+            "/code/email/sendEmail",
+            "/admin/login",
+            "/admin/addPerson"
             // 可根据需要添加更多白名单路径，如注册、验证码等
             // "/user/register",
             // "/captcha/generate"

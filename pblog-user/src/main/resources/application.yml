@@ -26,8 +26,8 @@ spring:
   mail:
     host: smtp.qq.com  # QQ邮箱SMTP服务器（固定）
     port: 465  # SSL加密专用端口（必须为465，不能用587）
-    username: ${bin.mail.username}  # 你的QQ邮箱（如2503457798@qq.com）
-    password: ${bin.mail.password}  # 你的授权码（ksvvvlqkvgwyeaei，确认未过期）
+    username: ${bin.mail.username}
+    password: ${bin.mail.password}
     properties:
       mail:
         smtp:
@@ -51,7 +51,7 @@ minio:
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径
-  type-aliases-package: com.pblog.entity  # 实体类包路径
+  type-aliases-package: com.pblog.common.entity  # 实体类包路径
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 日志
 

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -38,6 +39,8 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
             // 密码错误：提示“密码错误”
             message = "密码错误";
             log.info("认证失败：{}", message);
+        } else if (authException instanceof DisabledException) {
+            message = "账号已被禁用";
         } else {
             // 其他认证异常（如账号锁定、禁用等）：默认提示
             message = "用户认证失败，请重新登录";

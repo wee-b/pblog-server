@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -192,6 +193,8 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(encodedPassword);
                 user.setEmail(registerDTO.getEmail());
                 user.setAvatar(DefaultConstants.DEFAULT_AVATAR_FILENAME);
+                user.setStatus(DefaultConstants.DEFAULT_STATUS);
+                user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
                 int rows = userMapper.insert(user);
 
                 if (rows > 0) {
@@ -240,7 +243,10 @@ public class UserServiceImpl implements UserService {
                 .set(User::getEmail, userDTO.getAvatar())
                 .set(User::getEmail, userDTO.getBio());
 
-        userMapper.update(null, lambdaUpdateWrapper);
+        int updated = userMapper.update(null, lambdaUpdateWrapper);
+        if (updated == 0) {
+            throw new RuntimeException("用户信息更新失败");
+        }
 
         return username;
     }
@@ -251,7 +257,7 @@ public class UserServiceImpl implements UserService {
         String username = SecurityContextUtil.getUsername();
         String oldEmail = SecurityContextUtil.getUser().getEmail();
         if (oldEmail != null && emailCodeDTO.getEmail() == oldEmail){
-            throw new RuntimeException("不可以设置为原来的有邮箱");
+            throw new BusinessException("不可以设置为原来的有邮箱");
         }
 
         verifyCode(RedisConstants.LOGIN_EmailCode_KEY+emailCodeDTO.getEmail(),emailCodeDTO.getCode());
@@ -307,9 +313,15 @@ public class UserServiceImpl implements UserService {
         // 3. 执行账号注销（删除用户数据）
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         String username = loginUser.getUsername();
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username);
-        int rows = userMapper.delete(queryWrapper);
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("username", username);
+//        int rows = userMapper.delete(queryWrapper);
+        // TODO 改为逻辑删除，后续可采用延迟队列清除
+        LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
+                .set(User::getDelFlag, DefaultConstants.Deleted_DelFlag);     // 更新
+
+        userMapper.update(null, lambdaUpdateWrapper);
         log.info("{}用户注销成功",username);
 
         return "账号注销成功";
@@ -355,8 +367,12 @@ public class UserServiceImpl implements UserService {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(column, value);
         User user = userMapper.selectOne(queryWrapper);
-        if (user == null) {
+        if (user == null || user.getDelFlag().equals("1")) {
             throw new BusinessException("用户不存在，请检查"+message);
+        }
+
+        if(user.getStatus().equals("0")){
+            throw new DisabledException("账号已被禁用");
         }
 
         LoginUser loginUser = new LoginUser();

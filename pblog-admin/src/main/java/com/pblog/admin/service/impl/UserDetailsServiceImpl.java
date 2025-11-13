@@ -1,9 +1,9 @@
-package com.pblog.user.service.impl;
+package com.pblog.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.pblog.admin.mapper.UserMapper;
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.entity.User;
-import com.pblog.user.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
@@ -38,6 +38,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             // TODO 报错不走ExceptionHandler
             throw new UsernameNotFoundException("用户不存在");
         }
+
+//        log.info("user.getStatus():" + user.getStatus());
         if(user.getStatus().equals("0")){
             throw new DisabledException("账号已被禁用");
         }

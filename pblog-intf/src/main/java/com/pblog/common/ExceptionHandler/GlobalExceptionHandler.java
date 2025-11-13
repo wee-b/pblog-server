@@ -50,6 +50,13 @@ public class GlobalExceptionHandler {
         return ResponseResult.error(e.getMessage());
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseResult handleRuntimeException(RuntimeException e, HttpServletResponse response) {
+        log.info("运行时异常：{}", e.getMessage());
+        // 使用ResponseResult.error(String message)，默认code=400
+        return ResponseResult.error(400,e.getMessage());
+    }
+
 
     // -------------------------- 2. 处理框架/参数校验异常 --------------------------
 
