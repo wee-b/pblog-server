@@ -73,6 +73,7 @@ public class FriendLink implements Serializable {
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private Integer createBy;
 
     /**

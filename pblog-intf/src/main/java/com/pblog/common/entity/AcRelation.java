@@ -43,6 +43,7 @@ public class AcRelation implements Serializable {
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private Integer createBy;
 
     /**
