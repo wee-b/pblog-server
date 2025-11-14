@@ -1,10 +1,10 @@
-package com.pblog.service;
+package com.pblog.admin.service;
 
-import com.pblog.dto.CategoryDto;
-import com.pblog.entity.Category;
-import com.pblog.result.PageResult;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import com.pblog.common.vo.CategoryVO;
+import com.pblog.common.dto.admin.CategoryDTO;
+import com.pblog.common.dto.PageQueryDTO;
+import com.pblog.common.entity.Category;
+import com.pblog.common.result.PageResult;
 
 import java.util.List;
 
@@ -27,11 +27,9 @@ public interface CategoryService {
     /**
      * 分页查询
      *
-     * @param pageNo 筛选条件
-     * @param pageSize      分页对象
      * @return 查询结果
      */
-    PageResult queryByPage(Integer pageNo, Integer pageSize);
+    PageResult queryByPage(PageQueryDTO pageQueryDTO);
 
     /**
      * 新增数据
@@ -39,7 +37,7 @@ public interface CategoryService {
      * @param categoryDto 实例对象
      * @return 实例对象
      */
-    void add(CategoryDto categoryDto);
+    void add(CategoryDTO categoryDto);
 
     /**
      * 修改数据
@@ -47,7 +45,7 @@ public interface CategoryService {
      * @param categoryDto 实例对象
      * @return 实例对象
      */
-    void edit(CategoryDto categoryDto);
+    void edit(Integer id,CategoryDTO categoryDto);
 
     /**
      * 通过主键删除数据
@@ -57,6 +55,6 @@ public interface CategoryService {
      */
     void deleteById(Integer id);
 
-    List<Category> getAll();
+    List<CategoryVO> getAll();
 
 }

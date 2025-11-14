@@ -1,7 +1,7 @@
 package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.pblog.common.constant.EmailConstants;
+import com.pblog.common.enumeration.EmailConstants;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.entity.User;
 import com.pblog.common.utils.RandomCodeUtil;

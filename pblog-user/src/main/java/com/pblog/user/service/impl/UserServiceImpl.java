@@ -2,7 +2,7 @@ package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.pblog.common.ExceptionHandler.BusinessException;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.dto.*;

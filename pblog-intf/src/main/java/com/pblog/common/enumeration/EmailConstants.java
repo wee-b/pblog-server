@@ -1,4 +1,4 @@
-package com.pblog.common.constant;
+package com.pblog.common.enumeration;
 
 import lombok.Getter;
 

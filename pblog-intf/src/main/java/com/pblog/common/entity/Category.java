@@ -40,15 +40,9 @@ public class Category implements Serializable {
     private Integer orderNum;
 
     /**
-     * 分类状态（0正常 1禁用）
+     * 描述
      */
-    private String status;
-
-    /**
-     * 删除标志（0存在 1删除）
-     */
-    @TableLogic
-    private String delFlag;
+    private String description;
 
     /**
      * 创建者

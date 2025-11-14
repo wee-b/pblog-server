@@ -1,6 +1,7 @@
 package com.pblog.common.ExceptionHandler;
 
 import com.alibaba.fastjson.JSON;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.common.utils.WebUtils;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,6 +49,12 @@ public class GlobalExceptionHandler {
         log.info("业务异常：{}", e.getMessage());
         // 使用ResponseResult.error(String message)，默认code=400
         return ResponseResult.error(e.getMessage());
+    }
+    // 处理 IllegalArgumentException（参数不合法，Java标准异常）
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseResult handleIllegalArgumentException(IllegalArgumentException e, HttpServletResponse response) {
+        log.warn("参数不合法异常：{}", e.getMessage()); // 用warn级别，符合参数校验类异常日志规范
+        return ResponseResult.error(400, e.getMessage()); // 状态码400，与参数异常统一
     }
 
     @ExceptionHandler(RuntimeException.class)

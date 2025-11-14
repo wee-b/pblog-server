@@ -1,4 +1,4 @@
-package com.pblog.common.dto;
+package com.pblog.common.dto.admin;
 
 import lombok.Data;
 
@@ -12,9 +12,8 @@ import java.io.Serializable;
 @Data
 public class CategoryDTO implements Serializable {
 
-    private String name;
-    private String alias;
-    private Long parentId;
+    private String categoryName;
+    private Integer parentId;
     private Integer sortOrder;
     private String description;
 }

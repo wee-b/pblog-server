@@ -1,7 +1,6 @@
 package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.pblog.common.ExceptionHandler.BusinessException;
 import com.pblog.common.entity.User;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.user.mapper.UserMapper;

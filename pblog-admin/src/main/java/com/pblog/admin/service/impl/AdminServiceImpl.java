@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pblog.admin.mapper.UserMapper;
 import com.pblog.admin.service.AdminService;
-import com.pblog.common.ExceptionHandler.BusinessException;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.dto.LoginUser;

@@ -95,7 +95,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <!-- 只打包当前模块的配置文件（如 application-user.yml 和基础 application-admin.yml） -->
+                    <!-- 只打包当前模块的配置文件（如 application-admin.yml 和基础 application-admin.yml） -->
                     <include>application.yml</include>
                     <include>application-admin.yml</include>
                     <include>mapper/**/*.xml</include> <!-- 保留 Mapper 配置 -->

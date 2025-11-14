@@ -1,4 +1,4 @@
-package com.pblog.common.ExceptionHandler;
+package com.pblog.common.Expection;
 
 /**
  * 自定义业务异常类：用于标识已知的业务错误（如“邮箱已被注册”“订单不存在”等）

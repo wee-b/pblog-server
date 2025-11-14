@@ -7,7 +7,6 @@ import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.common.vo.UserAdminInfoVO;
-import com.pblog.common.vo.UserInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
