@@ -44,7 +44,8 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
         } else {
             // 其他认证异常（如账号锁定、禁用等）：默认提示
             message = "用户认证失败，请重新登录";
-            log.info("认证异常：{}，详情：{}", message, authException.getMessage());
+            log.error("认证异常：{}，请求路径：{}，异常类型：{}",
+                    message, request.getRequestURI(), authException.getClass().getName(), authException);
         }
 
         // 构建响应结果（状态码统一用 401 UNAUTHORIZED）

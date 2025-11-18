@@ -15,16 +15,18 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         // 填充创建时间和更新时间（当前时间）
         this.strictInsertFill(metaObject, "create_time", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "update_time", LocalDateTime.class, LocalDateTime.now());
 
-        // 填充创建人和更新人（当前登录用户，从SecurityContext获取）
-        String username = SecurityContextUtil.getUsername();
-        if(username == null){
-            username = "0";
-        }
 
-        this.strictInsertFill(metaObject, "create_by", String.class, username);
-        this.strictInsertFill(metaObject, "update_by", String.class, username);
+        // TODO 这里在创建新用户的时候会有bug
+//        this.strictInsertFill(metaObject, "update_time", LocalDateTime.class, LocalDateTime.now());
+//
+//        // 填充创建人和更新人（当前登录用户，从SecurityContext获取）
+//        String username = SecurityContextUtil.getUsername();
+//        if(username == null){
+//            username = "0";
+//        }
+//        this.strictInsertFill(metaObject, "create_by", String.class, username);
+//        this.strictInsertFill(metaObject, "update_by", String.class, username);
     }
 
     // 更新操作时的填充逻辑

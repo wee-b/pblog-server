@@ -30,13 +30,13 @@ public class LoginUser implements UserDetails {
     private List<SimpleGrantedAuthority> authorities;
 
     /**
-     * 获取权限列表
+     * 获取权限列表,重写这个方法后在创建
      * @return
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        if (authorities == null) {
+        if (authorities != null) {
             return authorities;
         }
 

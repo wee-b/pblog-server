@@ -5,12 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
+import com.pblog.common.constant.RoleConstant;
 import com.pblog.common.dto.*;
 import com.pblog.common.entity.User;
+import com.pblog.common.entity.rabc.PbUserRole;
 import com.pblog.common.utils.RandomCodeUtil;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.vo.UserInfoVO;
 import com.pblog.user.mapper.UserMapper;
+import com.pblog.user.mapper.UserRoleMapper;
 import com.pblog.user.service.UserService;
 import com.pblog.common.utils.JjwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +27,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,7 +35,9 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,6 +54,8 @@ public class UserServiceImpl implements UserService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
     /**
      * 账号密码登录
@@ -166,6 +174,7 @@ public class UserServiceImpl implements UserService {
         return map;
     }
 
+    // TODO 添加事务控制
     @Override
     public String register(RegisterDTO registerDTO) {
 
@@ -196,6 +205,15 @@ public class UserServiceImpl implements UserService {
                 user.setStatus(DefaultConstants.DEFAULT_STATUS);
                 user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
                 int rows = userMapper.insert(user);
+
+                // 为用户分配权限
+                Integer userId = user.getId();
+                Integer roleId = user.getEmail() == null ? RoleConstant.VISITOR_ROLE_ID: RoleConstant.NORMAL_USER_ROLE_ID;
+                PbUserRole pbUserRole = new PbUserRole();
+                pbUserRole.setRoleId(roleId);
+                pbUserRole.setUserId(userId);
+
+                userRoleMapper.insert(pbUserRole);
 
                 if (rows > 0) {
                     return username;
@@ -254,7 +272,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String updateEmail(EmailCodeDTO emailCodeDTO) {
 
-        String username = SecurityContextUtil.getUsername();
+        User user = SecurityContextUtil.getUser();
         String oldEmail = SecurityContextUtil.getUser().getEmail();
         if (oldEmail != null && emailCodeDTO.getEmail() == oldEmail){
             throw new BusinessException("不可以设置为原来的有邮箱");
@@ -262,12 +280,20 @@ public class UserServiceImpl implements UserService {
 
         verifyCode(RedisConstants.LOGIN_EmailCode_KEY+emailCodeDTO.getEmail(),emailCodeDTO.getCode());
 
+        // 第一次绑定邮箱后,变更用户权限:游客-->正式用户
+        if (oldEmail == null){
+            LambdaUpdateWrapper<PbUserRole> luw = new LambdaUpdateWrapper<>();
+            luw.eq(PbUserRole::getUserId,user.getId())
+                .set(PbUserRole::getRoleId, RoleConstant.NORMAL_USER_ROLE_ID);
+            userRoleMapper.update(null, luw);
+        }
+
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
+        lambdaUpdateWrapper.eq(User::getUsername, user.getUsername())  // 条件
                 .set(User::getEmail, emailCodeDTO.getEmail());     // 更新
 
         userMapper.update(null, lambdaUpdateWrapper);
-        return username;
+        return user.getUsername();
     }
 
     @Override
@@ -350,7 +376,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 查询结果用户应该存在
+     * 查询结果用户应该存在,作用与loadUserByUsername方法相同
      * @param column
      * @param value
      * @return
@@ -375,11 +401,9 @@ public class UserServiceImpl implements UserService {
             throw new DisabledException("账号已被禁用");
         }
 
-        LoginUser loginUser = new LoginUser();
-        loginUser.setUser(user);
-        // TODO 查询权限信息
-        loginUser.setAuthorities(null);
-        return loginUser;
+        // 查询权限信息
+        List<String> lis = userRoleMapper.selectRoleKeysByUserId(user.getId());
+        return new LoginUser(user,lis);
     }
 
     /**

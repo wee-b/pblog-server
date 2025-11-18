@@ -5,15 +5,18 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pblog.admin.mapper.UserMapper;
+import com.pblog.admin.mapper.UserRoleMapper;
 import com.pblog.admin.service.AdminService;
 import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
+import com.pblog.common.constant.RoleConstant;
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.dto.PageQueryDTO;
 import com.pblog.common.dto.PasswordLoginDTO;
 import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
+import com.pblog.common.entity.rabc.PbUserRole;
 import com.pblog.common.utils.JjwtUtil;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.vo.UserAdminInfoVO;
@@ -26,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +41,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRoleMapper userRoleMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
@@ -144,6 +150,7 @@ public class AdminServiceImpl implements AdminService {
         return user;
     }
 
+    // TODO 添加事务控制
     @Override
     public void addPerson(AdminRegisterDTO adminRegisterDTO) {
 
@@ -162,6 +169,13 @@ public class AdminServiceImpl implements AdminService {
         user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
 
         int inserted = userMapper.insert(user);
+
+        Integer userId = user.getId();
+        PbUserRole pbUserRole = new PbUserRole();
+        pbUserRole.setUserId(userId);
+        pbUserRole.setRoleId(RoleConstant.AUDITOR_ROLE_ID);
+        userRoleMapper.insert(pbUserRole);
+
         if (inserted == 0) {
             throw new BusinessException("用户添加失败");
         }
@@ -193,7 +207,7 @@ public class AdminServiceImpl implements AdminService {
 
 
     /**
-     * 查询结果用户应该存在
+     * 查询结果用户应该存在,作用与loadUserByUsername方法相同
      * @param column
      * @param value
      * @return
@@ -219,10 +233,8 @@ public class AdminServiceImpl implements AdminService {
             throw new DisabledException("账号已被禁用");
         }
 
-        LoginUser loginUser = new LoginUser();
-        loginUser.setUser(user);
-        // TODO 查询权限信息
-        loginUser.setAuthorities(null);
-        return loginUser;
+        // 查询权限信息
+        List<String> lis = userRoleMapper.selectRoleKeysByUserId(user.getId());
+        return new LoginUser(user,lis);
     }
 }

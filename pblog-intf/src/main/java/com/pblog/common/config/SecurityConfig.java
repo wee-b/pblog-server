@@ -6,17 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -43,6 +42,20 @@ public class SecurityConfig {
     @Autowired
     private AccessDeniedHandler accessDeniedHandler;
 
+    // 1. 配置角色继承关系：SUPER > AUDITOR > USER > VISITOR > ROLE_UNLOGIN
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        // 声明：SUPER包含AUDITOR，AUDITOR包含USER，USER包含VISITOR
+        hierarchy.setHierarchy("""
+            ROLE_SUPER > ROLE_AUDITOR
+            ROLE_AUDITOR > ROLE_USER
+            ROLE_USER > ROLE_VISITOR
+            ROLE_VISITOR > ROLE_UNLOGIN
+            """);
+        return hierarchy;
+    }
+
     /**
      * 配置安全过滤链（核心配置）
      * 替代旧版本的 configure(HttpSecurity) 方法，通过 SecurityFilterChain 定义安全规则
@@ -63,16 +76,42 @@ public class SecurityConfig {
                 // 设置 Session 为无状态，不存储用户会话信息
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
+        // 配置URL权限规则
+            .authorizeHttpRequests(auth -> auth
+                // 无需权限路径
+                .requestMatchers(
+                        "/error",
+                        "/hello",
+                        "/user/passwordLogin",
+                        "/user/register",
+                        "/user/emailCodeLogin",
+                        "/user/emailLogin",
+                        "/user/resetPassword",
+                        "/code/email/sendEmail",
+                        "/admin/login",
+                        "/admin/addPerson"      // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+                ).permitAll()
 
+                // 游客权限（ROLE_VISITOR）
+                .requestMatchers(
+                        "/user/logout", "/user/updateInfo", "/user/updateEmail",
+                        "/user/forgetPassword", "/user/getUserInfo", "/user/deleteAccount"
+                ).hasRole("VISITOR") // 只需配置最低权限
 
-        // 配置请求授权规则
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll() // 所有路径允许匿名访问
-                // 登录接口允许匿名访问
-//                .requestMatchers("/user/passwordLogin").anonymous()
-//                .requestMatchers("/hello").permitAll()
-                // 其他所有请求必须认证
-//                .anyRequest().authenticated()
-        );
+                // 普通用户权限（ROLE_USER）
+                .requestMatchers("/file/uploadAvatar").hasRole("USER")
+
+                // 管理员权限（ROLE_AUDITOR 或 ROLE_SUPER）
+                .requestMatchers(
+                        "/admin/**",          // 简化：所有/admin/*路径
+                        "/menu/**",           // 所有/menu/*路径
+                        "/role/**",           // 所有/role/*路径
+                        "/category/**"        // 所有/category/*路径
+                ).hasAnyRole("AUDITOR", "SUPER")
+
+                // 剩余请求需认证
+                .anyRequest().authenticated()
+            );
 
         // 将jwtAuthenticationTokenFilter过滤器加在UsernamePasswordAuthenticationFilter之前
         http.addFilterBefore(new JwtAuthenticationTokenFilter(redisTemplate,userDetailsService), UsernamePasswordAuthenticationFilter.class);

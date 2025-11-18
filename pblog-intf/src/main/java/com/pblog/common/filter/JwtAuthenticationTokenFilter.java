@@ -24,18 +24,18 @@ import java.util.Objects;
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     // 白名单路径常量列表，集中管理无需验证的路径
+    // TODO 之后可以实现一下白名单配置热更新
     private static final List<String> WHITE_LIST = Arrays.asList(
+            "/error",
             "/hello",
             "/user/passwordLogin",
-            "/user/emailLogin",
             "/user/register",
             "/user/emailCodeLogin",
+            "/user/emailLogin",
+            "/user/resetPassword",
             "/code/email/sendEmail",
             "/admin/login",
-            "/admin/addPerson"
-            // 可根据需要添加更多白名单路径，如注册、验证码等
-            // "/user/register",
-            // "/captcha/generate"
+            "/admin/addPerson"      // TODO "/admin/addPerson" 后续移除白名单，只有超管才能注册管理员
     );
 
     private final StringRedisTemplate stringRedisTemplate;
