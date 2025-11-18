@@ -48,12 +48,13 @@ public class PbRole implements Serializable {
     /**
      * 删除标志（0代表存在 1代表删除）
      */
-    @TableLogic
+//    @TableLogic
     private String delFlag;
 
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private Integer createBy;
 
     /**
@@ -65,6 +66,7 @@ public class PbRole implements Serializable {
     /**
      * 更新者
      */
+    @TableField(fill = FieldFill.UPDATE)
     private Integer updateBy;
 
     /**

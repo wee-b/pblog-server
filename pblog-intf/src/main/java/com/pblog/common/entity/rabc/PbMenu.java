@@ -83,6 +83,7 @@ public class PbMenu implements Serializable {
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private Integer createBy;
 
     /**
@@ -94,6 +95,7 @@ public class PbMenu implements Serializable {
     /**
      * 更新者
      */
+    @TableField(fill = FieldFill.UPDATE)
     private Integer updateBy;
 
     /**
@@ -110,6 +112,6 @@ public class PbMenu implements Serializable {
     /**
      * 删除标志（0存在 1删除）
      */
-    @TableLogic
+//    @TableLogic
     private String delFlag;
 }
