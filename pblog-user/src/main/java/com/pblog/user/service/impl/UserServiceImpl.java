@@ -15,20 +15,20 @@ import com.pblog.common.vo.UserInfoVO;
 import com.pblog.user.mapper.UserMapper;
 import com.pblog.user.mapper.UserRoleMapper;
 import com.pblog.user.service.CodeService;
+import com.pblog.user.service.FileService;
 import com.pblog.user.service.UserService;
 import com.pblog.common.utils.JjwtUtil;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,16 +38,11 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Value("${minio.bucket-name}")
-    private String bucketName;
-    @Value("${minio.endpoint}")
-    private String minioEndpoint;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -59,6 +54,9 @@ public class UserServiceImpl implements UserService {
     private UserRoleMapper userRoleMapper;
     @Autowired
     private CodeService codeService;
+
+    @Resource
+    private FileService fileService;
 
     /**
      * 账号密码登录
@@ -425,7 +423,7 @@ public class UserServiceImpl implements UserService {
         User user = SecurityContextUtil.getUser();
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user, userInfoVO);
-        userInfoVO.setAvatarUrl(generateAvatarUrl(user.getAvatar()));
+        userInfoVO.setAvatarUrl(fileService.generateAvatarUrl(user.getAvatar()));
         return userInfoVO;
     }
 
@@ -464,13 +462,5 @@ public class UserServiceImpl implements UserService {
         return new LoginUser(user,lis);
     }
 
-    /**
-     * 生成头像访问URL
-     */
-    private String generateAvatarUrl(String fileName) {
-        // 格式：MinIO地址/桶名/文件路径（需确保桶可公开访问或通过签名URL访问）
-        // 若桶为私有，需生成预签名URL（添加过期时间）
-        return minioEndpoint + "/" + bucketName + "/" + fileName;
-    }
 
 }

@@ -171,11 +171,16 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 生成头像访问URL
+     * 生成头像访问 URL
      */
-    private String generateAvatarUrl(String fileName) {
+    public String generateAvatarUrl(String fileName) {
         // 格式：MinIO地址/桶名/文件路径（需确保桶可公开访问或通过签名URL访问）
-        // 若桶为私有，需生成预签名URL（添加过期时间）
-        return minioEndpoint + "/" + bucketName + "/" + fileName;
+        // 参数校验
+        if (fileName == null || fileName.trim().isEmpty()) {
+            throw new IllegalArgumentException("文件名不能为空");
+        }
+        // 路径规范化（避免重复 "/"）
+        String normalizedFileName = fileName.startsWith("/") ? fileName.substring(1) : fileName;
+        return minioEndpoint + "/" + bucketName + "/" + normalizedFileName;
     }
 }
