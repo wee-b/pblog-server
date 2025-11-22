@@ -34,6 +34,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/user/emailLogin",
             "/user/resetPassword",
             "/code/email/sendEmail",
+            "/code/picture/generate",
             "/admin/login",
             "/admin/addPerson"      // TODO "/admin/addPerson" 后续移除白名单，只有超管才能注册管理员
     );

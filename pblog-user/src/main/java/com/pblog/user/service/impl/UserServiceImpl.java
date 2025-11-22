@@ -14,6 +14,7 @@ import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.vo.UserInfoVO;
 import com.pblog.user.mapper.UserMapper;
 import com.pblog.user.mapper.UserRoleMapper;
+import com.pblog.user.service.CodeService;
 import com.pblog.user.service.UserService;
 import com.pblog.common.utils.JjwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +57,8 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private UserRoleMapper userRoleMapper;
+    @Autowired
+    private CodeService codeService;
 
     /**
      * 账号密码登录
@@ -65,6 +68,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map<String, String> passwordLogin(PasswordLoginDTO passwordLoginDTO) throws BadCredentialsException {
+
+        // 0.校验图片验证码（核心逻辑，复用 codeService）
+        boolean captchaValid = codeService.verifyCaptcha(
+                passwordLoginDTO.getCaptchaUuid(),
+                passwordLoginDTO.getCaptchaCode()
+        );
+        if (!captchaValid) {
+            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        }
+
         Map<String, String> map = new HashMap<>();
 
         // 1. 手动查询用户信息
@@ -104,6 +117,16 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     public Map<String, String> emailLogin(EmailLoginDTO emailLoginDTO) {
+
+        // 0.校验图片验证码（核心逻辑，复用 codeService）
+        boolean captchaValid = codeService.verifyCaptcha(
+                emailLoginDTO.getCaptchaUuid(),
+                emailLoginDTO.getCaptchaCode()
+        );
+        if (!captchaValid) {
+            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        }
+
         Map<String, String> map = new HashMap<>();
 
         // 1.检查邮箱用户是否存在
@@ -144,11 +167,24 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map<String, String> emailCodeLogin(EmailCodeDTO emailCodeLoginDTO) {
+
+        // 0.校验图片验证码（核心逻辑，复用 codeService）
+        boolean captchaValid = codeService.verifyCaptcha(
+                emailCodeLoginDTO.getCaptchaUuid(),
+                emailCodeLoginDTO.getCaptchaCode()
+        );
+        if (!captchaValid) {
+            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        }
+
         // 1.检查用户是否存在
         LoginUser loginUser = QueryLoginUserByOneColumn("email", emailCodeLoginDTO.getEmail());
 
         // 2.校验验证码
-        verifyCode(RedisConstants.LOGIN_EmailCode_KEY + emailCodeLoginDTO.getEmail(), emailCodeLoginDTO.getCode());
+        codeService.verifyEmailCode(
+                RedisConstants.LOGIN_EmailCode_KEY + emailCodeLoginDTO.getEmail(),
+                emailCodeLoginDTO.getCode()
+        );
 
         // 3.手动创建认证对象，存入SecurityContextHolder
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -178,6 +214,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public String register(RegisterDTO registerDTO) {
 
+        // 0.校验图片验证码（核心逻辑，复用 codeService）
+        boolean captchaValid = codeService.verifyCaptcha(
+                registerDTO.getCaptchaUuid(),
+                registerDTO.getCaptchaCode()
+        );
+        if (!captchaValid) {
+            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        }
+
         // 1.检查邮箱是否被注册
         if (registerDTO.getEmail() != null) {
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -187,8 +232,11 @@ public class UserServiceImpl implements UserService {
                 throw new BusinessException("该邮箱已绑定用户，请更换邮箱");
             }
 
-            // 2.校验验证码
-            verifyCode(RedisConstants.LOGIN_EmailCode_KEY +  registerDTO.getEmail(), registerDTO.getCode());
+            // 2.校验邮箱验证码
+            codeService.verifyEmailCode(
+                    RedisConstants.LOGIN_EmailCode_KEY + registerDTO.getEmail(),
+                    registerDTO.getCode()
+            );
         }
 
         // 最多重试3次，避免无限循环
@@ -234,7 +282,11 @@ public class UserServiceImpl implements UserService {
         // 1.检查用户是否存在
         QueryLoginUserByOneColumn("email", resetPasswordDTO.getEmail());
         // 2.校验验证码
-        verifyCode(RedisConstants.LOGIN_EmailCode_KEY + resetPasswordDTO.getEmail(), resetPasswordDTO.getCode());
+        codeService.verifyEmailCode(
+                RedisConstants.LOGIN_EmailCode_KEY + resetPasswordDTO.getEmail(),
+                resetPasswordDTO.getCode()
+        );
+
         // 3.更新
         String encodedPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -272,15 +324,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public String updateEmail(EmailCodeDTO emailCodeDTO) {
 
+        // 0.校验图片验证码（核心逻辑，复用 codeService）
+        boolean captchaValid = codeService.verifyCaptcha(
+                emailCodeDTO.getCaptchaUuid(),
+                emailCodeDTO.getCaptchaCode()
+        );
+        if (!captchaValid) {
+            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        }
+        // 1.检验是否为原来的邮箱
         User user = SecurityContextUtil.getUser();
         String oldEmail = SecurityContextUtil.getUser().getEmail();
         if (oldEmail != null && emailCodeDTO.getEmail() == oldEmail){
             throw new BusinessException("不可以设置为原来的有邮箱");
         }
 
-        verifyCode(RedisConstants.LOGIN_EmailCode_KEY+emailCodeDTO.getEmail(),emailCodeDTO.getCode());
+        // 2.校验验证码
+        codeService.verifyEmailCode(
+                RedisConstants.LOGIN_EmailCode_KEY + emailCodeDTO.getEmail(),
+                emailCodeDTO.getCode()
+        );
 
-        // 第一次绑定邮箱后,变更用户权限:游客-->正式用户
+        // 3.第一次绑定邮箱后,变更用户权限:游客-->正式用户
         if (oldEmail == null){
             LambdaUpdateWrapper<PbUserRole> luw = new LambdaUpdateWrapper<>();
             luw.eq(PbUserRole::getUserId,user.getId())
@@ -288,6 +353,7 @@ public class UserServiceImpl implements UserService {
             userRoleMapper.update(null, luw);
         }
 
+        // 4.更新
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(User::getUsername, user.getUsername())  // 条件
                 .set(User::getEmail, emailCodeDTO.getEmail());     // 更新
@@ -366,14 +432,6 @@ public class UserServiceImpl implements UserService {
 
     // =======================================  private函数  =======================================
 
-    private void verifyCode(String key,String code) {
-        String realCode = stringRedisTemplate.opsForValue().get(key);
-        if (realCode == null) {
-            throw new BusinessException("验证码已过期，请重新发送");
-        } else if (!realCode.equals(code)) {
-            throw new BusinessException("验证码错误");
-        }
-    }
 
     /**
      * 查询结果用户应该存在,作用与loadUserByUsername方法相同

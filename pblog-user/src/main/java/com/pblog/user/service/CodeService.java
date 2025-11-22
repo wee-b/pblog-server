@@ -1,10 +1,17 @@
 package com.pblog.user.service;
 
-public interface CodeService {
+import com.pblog.common.Expection.BusinessException;
+import com.pblog.common.vo.CaptchaVO;
 
-    boolean verifyEmailUser(String email);
+public interface CodeService {
 
     String verifyEmailCode(String receiveEmail);
 
     void sendEmailCode(String email);
+
+    void verifyEmailCode(String key, String code) throws BusinessException;
+
+    CaptchaVO generateCaptcha();
+
+    boolean verifyCaptcha(String captchaUuid, String userInputCode);
 }

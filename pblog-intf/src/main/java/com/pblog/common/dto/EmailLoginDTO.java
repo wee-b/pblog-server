@@ -10,5 +10,8 @@ import lombok.NoArgsConstructor;
 public class EmailLoginDTO {
     private String email;
     private String password;
+    // 图形验证码相关
+    private String captchaUuid;
+    private String captchaCode;
 }
 

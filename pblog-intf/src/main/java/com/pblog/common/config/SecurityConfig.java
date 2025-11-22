@@ -88,6 +88,7 @@ public class SecurityConfig {
                         "/user/emailLogin",
                         "/user/resetPassword",
                         "/code/email/sendEmail",
+                        "/code/picture/generate",
                         "/admin/login",
                         "/admin/addPerson"      // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
                 ).permitAll()
