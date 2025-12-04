@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pblog.user.mapper.ACRelationMapper">
+
+
+    <!-- 定义 resultMap -->
+    <resultMap id="AcRelationVOMap" type="com.pblog.common.vo.AcRelationVO">
+        <id property="articleId" column="article_id"/>
+        <collection property="categoryList" ofType="com.pblog.common.vo.CategoryVO">
+            <result property="id" column="id"/>
+            <result property="categoryName" column="category_name"/>
+            <result property="parentId" column="parent_id"/>
+            <result property="orderNum" column="order_num"/>
+        </collection>
+    </resultMap>
+
+
+    <!-- SQL 查询 -->
+    <select id="selectAcRelationVOByArticleIds" resultMap="AcRelationVOMap" parameterType="list">
+        SELECT
+        ac.article_id AS article_id,
+        c.id AS id,
+        c.category_name AS category_name,
+        c.parent_id AS parent_id,
+        c.order_num AS order_num
+        FROM pb_ac_relation ac
+        LEFT JOIN pb_category c ON ac.category_id = c.id
+        <where>
+            <if test="articleIds != null and articleIds.size() > 0">
+                ac.article_id IN
+                <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+                    #{articleId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY ac.article_id ASC, c.order_num ASC
+    </select>
+
+
+    <!-- 批量插入文章-分类关联关系 -->
+    <insert id="insertByCategoryIds">
+        INSERT INTO pb_ac_relation (article_id, category_id)
+        VALUES
+        <foreach collection="categoryIds" item="categoryId" separator=",">
+            (#{articleId}, #{categoryId})
+        </foreach>
+    </insert>
+</mapper>

@@ -89,6 +89,9 @@ public class SecurityConfig {
                     "/code/picture/generate",
                     "/admin/login",
                     "/admin/addPerson" ,     // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+                    "/article/pageQuery",
+                    "/article/queryById/**",
+                    "/article/getFeaturedArticles",
                     "/category/all"
                 ).permitAll()
 
@@ -137,7 +140,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 允许的前端域名（生产环境需指定具体域名，不要用*）
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080","http://localhost:8081", "http://127.0.0.1:5500"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         // 允许的请求方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头
@@ -146,6 +149,8 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
         // 预检请求的缓存时间（秒）
         configuration.setMaxAge(3600L);
+        // 🔥 关键添加：暴露自定义响应头 Captcha-Uuid
+        configuration.setExposedHeaders(Arrays.asList("Captcha-Uuid"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         // 对所有路径应用跨域配置

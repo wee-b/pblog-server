@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pblog.user.mapper.ArticleMapper">
+
+
+    <!-- 1. 分页查询：修复关联逻辑、去重方式、字段别名 -->
+    <!-- 分页查询不重复的文章ID列表（两步查询法第一步） -->
+    <select id="selectArticlePage" resultType="com.pblog.common.vo.ArticleVO">
+        SELECT DISTINCT
+        a.id ,
+        a.title,
+        a.summary,
+        a.cover_image,
+        a.author_username,
+        a.author_nickName,
+        a.view_count,
+        a.like_count,
+        a.comment_count,
+        a.sticky,
+        a.featured,
+        a.published_at,
+        a.content,
+        a.status
+        FROM pb_article a
+        <!-- 关联文章-分类中间表：用于筛选分类条件 -->
+        LEFT JOIN pb_ac_relation ac
+        ON a.id = ac.article_id
+        <if test="query.categoryIds != null and query.categoryIds.size() > 0">
+            AND ac.category_id IN
+            <foreach collection="query.categoryIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <where>
+            <!-- 筛选条件：确保只返回符合分类条件的文章（无分类筛选时返回所有） -->
+            <if test="query.categoryIds != null and query.categoryIds.size() > 0">
+                AND EXISTS (
+                SELECT 1 FROM pb_ac_relation ac2
+                WHERE ac2.article_id = a.id
+                AND ac2.category_id IN
+                <foreach collection="query.categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+                )
+            </if>
+            <!-- 原有筛选条件（保持不变） -->
+            <if test="query.keyword != null and query.keyword.trim() != ''">
+                AND (a.title LIKE CONCAT('%', #{query.keyword}, '%')
+                OR a.summary LIKE CONCAT('%', #{query.keyword}, '%'))
+            </if>
+            <if test="query.startTime != null">
+                AND a.published_at >= #{query.startTime}
+            </if>
+            <if test="query.endTime != null">
+                AND a.published_at <![CDATA[<=]]> #{query.endTime}
+            </if>
+            <if test="query.status != null and query.status != '' and query.status != -1">
+                AND a.status = #{query.status}
+            </if>
+            <if test="query.status == null or query.status == ''">
+                AND a.status = 1
+            </if>
+        </where>
+        <!-- 排序逻辑（保持不变） -->
+        ORDER BY
+        <choose>
+            <when test="query.sortField != null and query.sortField.trim() != ''">
+                <choose>
+                    <when test="query.sortField == 'publishedAt'">a.published_at</when>
+                    <when test="query.sortField == 'viewCount'">a.view_count</when>
+                    <when test="query.sortField == 'likeCount'">a.like_count</when>
+                    <when test="query.sortField == 'commentCount'">a.comment_count</when>
+                    <otherwise>a.published_at</otherwise>
+                </choose>
+                <choose>
+                    <when test="query.sortDir != null and query.sortDir.toLowerCase() == 'asc'"> ASC</when>
+                    <otherwise> DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                a.published_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 2. 修复结果映射：解决字段冲突，明确分类字段映射 -->
+    <!-- 核心修复：给 collection 加 column="article_id"，关联主表的文章ID别名 -->
+    <resultMap id="ArticleVOResultMap" type="com.pblog.common.vo.ArticleVO">
+        <!-- 文章基础字段映射（保持不变，article_id 对应主表别名） -->
+        <id column="article_id" property="id"/> <!-- 主表主键：文章ID（别名） -->
+        <result column="title" property="title"/>
+        <result column="summary" property="summary"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="author_username" property="authorUsername"/>
+        <result column="author_nickName" property="authorNickName"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="sticky" property="sticky"/>
+        <result column="featured" property="featured"/>
+        <result column="published_at" property="publishedAt"/>
+        <result column="status" property="status"/>
+
+        <!-- 分类列表映射：关键添加 column="article_id"，关联主表文章ID -->
+        <collection
+                property="categories"
+                ofType="com.pblog.common.vo.CategoryVO"
+                column="article_id"
+                javaType="java.util.ArrayList">  <!-- 明确集合类型，可选但推荐 -->
+            <id column="category_id" property="id"/> <!-- 分类主键（别名，无冲突） -->
+            <result column="category_name" property="categoryName"/> <!-- 分类名称 -->
+            <result column="category_parent_id" property="parentId"/> <!-- 父分类ID -->
+            <result column="category_order_num" property="orderNum"/> <!-- 排序字段 -->
+        </collection>
+    </resultMap>
+
+    <!-- 3. 精选文章查询：统一别名，修复字段冲突 -->
+    <select id="selectFeaturedArticle" resultMap="ArticleVOResultMap">
+        SELECT
+        a.id as article_id,
+        a.title,
+        a.summary,
+        a.cover_image,
+        a.author_username,
+        a.author_nickName,
+        a.view_count,
+        a.like_count,
+        a.comment_count,
+        a.sticky,
+        a.featured,
+        a.published_at,
+        -- 分类字段：统一别名，与 resultMap 对应
+        c.id AS category_id,
+        c.category_name AS category_name,
+        c.parent_id AS category_parent_id,
+        c.order_num AS category_order_num
+        FROM pb_article a
+        -- 统一关联表别名（与分页查询一致，用 ac 替代 ar）
+        LEFT JOIN pb_ac_relation ac ON a.id = ac.article_id
+        LEFT JOIN pb_category c ON ac.category_id = c.id
+        <where>
+            a.status = 1 AND a.featured = 1
+        </where>
+        ORDER BY a.published_at DESC
+    </select>
+
+
+
+    <!-- 4. 新的 ArticleDetailVOResultMap：继承原 Map，仅补充 content 字段 -->
+    <resultMap id="ArticleDetailVOResultMap" type="com.pblog.common.vo.ArticleDetailVO" extends="ArticleVOResultMap">
+        <!-- 仅新增 content 字段映射（其他字段和 categories 集合均继承自父 Map） -->
+        <result column="content" property="content"/>
+    </resultMap>
+
+    <!-- 5. 查询文章详情：使用继承后的 resultMap -->
+    <select id="getArticleDetail" resultMap="ArticleDetailVOResultMap">
+        SELECT
+        a.id as article_id,
+        a.title,
+        a.summary,
+        a.cover_image,
+        a.author_username,
+        a.author_nickName,
+        a.view_count,
+        a.like_count,
+        a.comment_count,
+        a.sticky,
+        a.featured,
+        a.published_at,
+        a.content,
+        a.status,
+        -- 分类字段：统一别名，与 resultMap 对应
+        c.id AS category_id,
+        c.category_name AS category_name,
+        c.parent_id AS category_parent_id,
+        c.order_num AS category_order_num
+        FROM pb_article a
+        -- 统一关联表别名（与分页查询一致，用 ac 替代 ar）
+        LEFT JOIN pb_ac_relation ac ON a.id = ac.article_id
+        LEFT JOIN pb_category c ON ac.category_id = c.id
+        WHERE a.id = #{articleId}
+    </select>
+
+</mapper>
