@@ -2,11 +2,12 @@ package com.pblog.admin.controller;
 
 import com.pblog.admin.service.AdminService;
 import com.pblog.common.dto.PageQueryDTO;
-import com.pblog.common.dto.PasswordLoginDTO;
+import com.pblog.common.dto.login.PasswordLoginDTO;
 import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.common.vo.UserAdminInfoVO;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -58,7 +59,7 @@ public class AdminController {
     }
 
     @GetMapping("/UserPageQuery")
-    public ResponseResult<List<UserAdminInfoVO>> UserPageQuery(@RequestBody PageQueryDTO pageQueryDTO) {
+    public ResponseResult<List<UserAdminInfoVO>> UserPageQuery(@Valid @RequestBody PageQueryDTO pageQueryDTO) {
         log.info("用户信息分页查询请求");
         List<UserAdminInfoVO> res = adminService.UserPageQuery(pageQueryDTO);
         return ResponseResult.success(res);

@@ -1,6 +1,8 @@
 package com.pblog.user.controller;
 
 import com.pblog.common.dto.*;
+import com.pblog.common.dto.login.EmailCodeDTO;
+import com.pblog.common.dto.login.PasswordLoginDTO;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.common.vo.UserInfoVO;
 import com.pblog.user.service.UserService;

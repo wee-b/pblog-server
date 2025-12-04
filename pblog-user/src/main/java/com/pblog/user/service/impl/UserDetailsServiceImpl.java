@@ -37,7 +37,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             // TODO 报错不走ExceptionHandler
             throw new UsernameNotFoundException("用户不存在");
         }
-        if(user.getStatus().equals("0")){
+        if(user.getStatus().equals("1")){
             throw new DisabledException("账号已被禁用");
         }
 

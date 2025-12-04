@@ -7,6 +7,7 @@ import com.pblog.common.entity.Category;
 import com.pblog.common.result.PageResult;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.admin.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -49,7 +50,7 @@ public class CategoryController {
      * @return 查询结果
      */
     @GetMapping("/pagequery")
-    public ResponseResult<PageResult> queryByPage(@RequestBody PageQueryDTO pageQueryDTO) {
+    public ResponseResult<PageResult> queryByPage(@Valid @RequestBody PageQueryDTO pageQueryDTO) {
         PageResult pageResult = categoryService.queryByPage(pageQueryDTO);
         log.info("categoryService.pageResult:{}", pageResult);
         return ResponseResult.success(pageResult);

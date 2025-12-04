@@ -52,7 +52,13 @@ public class CategoryServiceImpl implements CategoryService {
         ).collect(Collectors.toList());
 
 
-        return new PageResult(collect.size(), collect);
+        return new PageResult(
+                categoryPage.getTotal(),    // 总记录数
+                categoryPage.getPages(),    // 总页数
+                categoryPage.getCurrent(),  // 当前页码
+                categoryPage.getSize(),     // 每页条数
+                collect              // 当前页数据
+        );
     }
 
     @Override

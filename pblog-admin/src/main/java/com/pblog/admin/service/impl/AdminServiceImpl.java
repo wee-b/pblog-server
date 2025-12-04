@@ -13,7 +13,7 @@ import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.constant.RoleConstant;
 import com.pblog.common.dto.LoginUser;
 import com.pblog.common.dto.PageQueryDTO;
-import com.pblog.common.dto.PasswordLoginDTO;
+import com.pblog.common.dto.login.PasswordLoginDTO;
 import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
 import com.pblog.common.entity.rabc.PbUserRole;
@@ -29,7 +29,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
