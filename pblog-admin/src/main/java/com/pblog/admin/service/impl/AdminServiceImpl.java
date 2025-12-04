@@ -164,7 +164,7 @@ public class AdminServiceImpl implements AdminService {
         User user = new User();
         user.setUsername(adminRegisterDTO.getUsername());
         user.setPassword(passwordEncoder.encode(adminRegisterDTO.getPassword()));
-        user.setAvatar(DefaultConstants.DEFAULT_AVATAR_FILENAME);
+        user.setAvatarUrl(DefaultConstants.DEFAULT_AVATAR_FILENAME);
         user.setStatus(DefaultConstants.DEFAULT_STATUS);
         user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
 

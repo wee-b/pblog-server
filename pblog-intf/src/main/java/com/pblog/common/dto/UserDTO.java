@@ -15,7 +15,7 @@ public class UserDTO implements Serializable {
     /**
      * 用户头像URL
      */
-    private String avatar;
+    private String avatarUrl;
 
     /**
      * 用户简介

@@ -1,6 +1,7 @@
 package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.entity.User;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.user.mapper.UserMapper;
@@ -30,12 +31,23 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
-    // 头像存储的子目录（便于分类管理）
+    // 头像存储的子目录
     private static final String AVATAR_DIR = "avatars/";
+    // 文章图片存储的子目录
+    private static final String ARTICLE_IMAGE_DIR = "article-images/";
+
     // 头像最大尺寸（5MB）
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+    // 文章图片最大尺寸（10MB）
+    private static final long MAX_ARTICLE_IMAGE_SIZE = 10 * 1024 * 1024;
+
     // 支持的图片格式
-    private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/jpg"};
+    private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/jpg", "image/gif"};
+
+    // 文章图片最大宽度（超过则等比压缩）
+    private static final int MAX_ARTICLE_IMAGE_WIDTH = 1920;
+    // 文章图片压缩质量
+    private static final float ARTICLE_IMAGE_QUALITY = 0.85f;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
@@ -49,10 +61,46 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
+    public String uploadImage(MultipartFile file) {
+        try {
+            // 1. 校验文章图片合法性
+            validateArticleImageFile(file);
+
+            // 2. 处理文章图片（仅压缩不裁剪，保持宽高比）
+            InputStream processedStream = processArticleImage(file);
+
+            // 3. 生成唯一文件名：article-images/用户ID/日期/UUID.后缀
+            Integer userId = SecurityContextUtil.getUser().getId();
+            String fileName = generateArticleImageFileName(file, userId);
+
+            // 4. 确保MinIO桶存在
+            ensureBucketExists();
+
+            // 5. 上传文件到MinIO
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .stream(processedStream, processedStream.available(), -1)
+                            .contentType(file.getContentType())
+                            .build()
+            );
+
+            // 6. 生成并返回访问URL
+            return generateImageUrl(fileName);
+
+        } catch (Exception e) {
+            log.error("文章图片上传失败", e);
+            throw new BusinessException("文章图片上传失败：" + e.getMessage());
+        }
+    }
+
+
+    @Override
     public String uploadAvatar(MultipartFile file) {
         try {
             // 1. 校验文件合法性
-            validateAvatarFile(file);
+            validateImageFile(file);
 
             // 2. 处理图片（压缩、裁剪为200x200）
             InputStream processedStream = processAvatarImage(file);
@@ -78,32 +126,64 @@ public class FileServiceImpl implements FileService {
             // 6.更新用户对应的头像路径
             LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.eq(User::getId, userId)  // 条件
-                    .set(User::getAvatar, fileName);     // 更新
+                    .set(User::getAvatarUrl, fileName);     // 更新
             userMapper.update(null, lambdaUpdateWrapper);
 
-            // 6. 生成并返回头像访问URL
-            return generateAvatarUrl(fileName);
+            // 7. 生成并返回头像访问URL
+            return generateImageUrl(fileName);
 
         } catch (Exception e) {
-            throw new RuntimeException("头像上传失败：" + e.getMessage());
+            log.error("头像上传失败", e);
+            throw new BusinessException("头像上传失败：" + e.getMessage());
         }
     }
 
     /**
      * 校验头像文件（大小、格式、合法性）
      */
-    private void validateAvatarFile(MultipartFile file) throws IOException {
+    private void validateImageFile(MultipartFile file) throws IOException {
         // 校验文件是否为空
         if (file.isEmpty()) {
-            throw new RuntimeException("请选择头像文件");
+            throw new RuntimeException("文件为空");
         }
 
         // 校验文件大小
         if (file.getSize() > MAX_AVATAR_SIZE) {
-            throw new RuntimeException("头像大小不能超过5MB");
+            throw new RuntimeException("图片大小不能超过5MB");
         }
 
         // 校验文件类型（MIME类型）
+        validateImageFileType(file);
+
+        // 校验是否为真实图片（防止伪装文件）
+        validateRealImage(file);
+    }
+
+    /**
+     * 校验文章图片文件（更大的尺寸限制）
+     */
+    private void validateArticleImageFile(MultipartFile file) throws IOException {
+        // 校验文件是否为空
+        if (file.isEmpty()) {
+            throw new RuntimeException("文件为空");
+        }
+
+        // 校验文件大小（文章图片允许更大）
+        if (file.getSize() > MAX_ARTICLE_IMAGE_SIZE) {
+            throw new RuntimeException("图片大小不能超过10MB");
+        }
+
+        // 校验文件类型（MIME类型）
+        validateImageFileType(file);
+
+        // 校验是否为真实图片（防止伪装文件）
+        validateRealImage(file);
+    }
+
+    /**
+     * 通用校验图片文件类型
+     */
+    private void validateImageFileType(MultipartFile file) {
         String contentType = file.getContentType();
         boolean isAllowed = false;
         for (String type : ALLOWED_IMAGE_TYPES) {
@@ -113,10 +193,14 @@ public class FileServiceImpl implements FileService {
             }
         }
         if (!isAllowed) {
-            throw new RuntimeException("仅支持JPG、PNG格式的图片");
+            throw new RuntimeException("仅支持JPG、PNG、GIF格式的图片");
         }
+    }
 
-        // 校验是否为真实图片（防止伪装文件）
+    /**
+     * 通用校验是否为真实图片
+     */
+    private void validateRealImage(MultipartFile file) throws IOException {
         BufferedImage image = ImageIO.read(file.getInputStream());
         if (image == null) {
             throw new RuntimeException("无效的图片文件");
@@ -130,34 +214,101 @@ public class FileServiceImpl implements FileService {
         // 压缩并裁剪为200x200的正方形（保持中心区域）
         BufferedImage processedImage = Thumbnails.of(file.getInputStream())
                 .size(200, 200)  // 目标尺寸
-                .keepAspectRatio(false)  // 强制尺寸（避免拉伸可先裁剪中心区域）
-                .outputQuality(0.8)  // 压缩质量（0.0-1.0）
+                .keepAspectRatio(false)  // 强制尺寸
+                .outputQuality(0.8f)  // 压缩质量
                 .asBufferedImage();
 
         // 转换为InputStream返回
+        return bufferedImageToInputStream(processedImage, "jpg");
+    }
+
+    /**
+     * 处理文章图片（仅压缩不裁剪，保持宽高比）
+     */
+    private InputStream processArticleImage(MultipartFile file) throws IOException {
+        // 1. 前置校验：确保文件和输入流有效
+        if (file.isEmpty() || file.getInputStream() == null) {
+            throw new IllegalArgumentException("上传的图片文件为空或输入流无效");
+        }
+
+        // 2. 读取原始图片并校验有效性
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
+        if (originalImage == null) {
+            throw new IllegalArgumentException("无法解析图片文件，请确认是有效图片格式（jpg/png/webp等）");
+        }
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        // 3. 修复核心问题：所有分支都必须设置尺寸参数（width/size）
+        BufferedImage processedImage;
+        if (originalWidth > MAX_ARTICLE_IMAGE_WIDTH) {
+            // 宽度超限：按最大宽度等比缩放
+            processedImage = Thumbnails.of(originalImage)
+                    .width(MAX_ARTICLE_IMAGE_WIDTH)  // 指定宽度，高度自动按比例
+                    .keepAspectRatio(true)
+                    .outputQuality(ARTICLE_IMAGE_QUALITY)
+                    .asBufferedImage();
+        } else {
+            // 宽度未超限：复用原图尺寸（关键修复），仅调整质量
+            processedImage = Thumbnails.of(originalImage)
+                    .size(originalWidth, originalHeight) // 显式设置原图尺寸，解决size未设置问题
+                    .keepAspectRatio(true)
+                    .outputQuality(ARTICLE_IMAGE_QUALITY)
+                    .asBufferedImage();
+        }
+
+        // 4. 获取原文件格式（保持原格式，兼容不同图片类型）
+        String suffix = getFileSuffix(file.getOriginalFilename());
+        String format = suffix.startsWith(".") ? suffix.substring(1) : "jpg";
+        // 兼容webp等特殊格式（ImageIO默认可能不支持，需额外依赖）
+        if ("webp".equalsIgnoreCase(format)) {
+            format = "png"; // 兜底：若不支持webp，转为png
+        }
+
+        // 5. 转换为InputStream返回
+        return bufferedImageToInputStream(processedImage, format);
+    }
+
+    /**
+     * BufferedImage转InputStream
+     */
+    private InputStream bufferedImageToInputStream(BufferedImage image, String format) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(processedImage, "jpg", baos);  // 统一转为jpg格式
+        ImageIO.write(image, format, baos);
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
     /**
-     * 生成唯一文件名（格式：avatars/用户ID/20241010/UUID.jpg）
+     * 生成头像文件名（格式：avatars/用户ID/20241010/UUID.jpg）
      */
     private String generateAvatarFileName(MultipartFile file, Integer userId) {
-        // 获取文件后缀（默认jpg）
-        String originalFilename = file.getOriginalFilename();
-        String suffix = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : ".jpg";
-
-        // 日期目录（按天划分，便于管理）
+        String suffix = getFileSuffix(file.getOriginalFilename());
         String dateDir = new SimpleDateFormat("yyyyMMdd").format(new Date());
-
-        // 生成UUID避免文件名重复
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-
-        // 最终路径：avatars/1001/20241010/xxx.jpg
         return AVATAR_DIR + userId + "/" + dateDir + "/" + uuid + suffix;
+    }
+
+    /**
+     * 生成文章图片文件名（格式：article-images/用户ID/20241010/UUID.后缀）
+     */
+    private String generateArticleImageFileName(MultipartFile file, Integer userId) {
+        String suffix = getFileSuffix(file.getOriginalFilename());
+        String dateDir = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        return ARTICLE_IMAGE_DIR + userId + "/" + dateDir + "/" + uuid + suffix;
+    }
+
+    /**
+     * 获取文件后缀（默认jpg）
+     */
+    private String getFileSuffix(String originalFilename) {
+        if (originalFilename == null || !originalFilename.contains(".")) {
+            return ".jpg";
+        }
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        // 统一后缀为小写
+        return suffix.toLowerCase();
     }
 
     /**
@@ -171,16 +322,17 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 生成头像访问 URL
+     * 通用生成图片访问URL
      */
-    public String generateAvatarUrl(String fileName) {
-        // 格式：MinIO地址/桶名/文件路径（需确保桶可公开访问或通过签名URL访问）
+
+    private String generateImageUrl(String fileName) {
         // 参数校验
         if (fileName == null || fileName.trim().isEmpty()) {
-            throw new IllegalArgumentException("文件名不能为空");
+            throw new IllegalArgumentException("图片文件名不能为空");
         }
         // 路径规范化（避免重复 "/"）
         String normalizedFileName = fileName.startsWith("/") ? fileName.substring(1) : fileName;
+        // 拼接完整URL（如果MinIO配置了自定义域名，这里可以替换为域名）
         return minioEndpoint + "/" + bucketName + "/" + normalizedFileName;
     }
 }

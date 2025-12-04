@@ -6,5 +6,6 @@ public interface FileService {
 
     String uploadAvatar(MultipartFile file);
 
-    String generateAvatarUrl(String fileName);
+    String uploadImage(MultipartFile file);
+
 }

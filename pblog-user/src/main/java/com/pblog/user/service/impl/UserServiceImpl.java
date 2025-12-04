@@ -247,7 +247,7 @@ public class UserServiceImpl implements UserService {
                 user.setUsername(username);
                 user.setPassword(encodedPassword);
                 user.setEmail(registerDTO.getEmail());
-                user.setAvatar(DefaultConstants.DEFAULT_AVATAR_FILENAME);
+                user.setAvatarUrl(DefaultConstants.DEFAULT_AVATAR_FILENAME);
                 user.setStatus(DefaultConstants.DEFAULT_STATUS);
                 user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
                 int rows = userMapper.insert(user);
@@ -307,9 +307,9 @@ public class UserServiceImpl implements UserService {
 
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
-                .set(User::getEmail, userDTO.getNickname())
-                .set(User::getEmail, userDTO.getAvatar())
-                .set(User::getEmail, userDTO.getBio());
+                .set(User::getNickname, userDTO.getNickname())
+                .set(User::getAvatarUrl, userDTO.getAvatarUrl())
+                .set(User::getBio, userDTO.getBio());
 
         int updated = userMapper.update(null, lambdaUpdateWrapper);
         if (updated == 0) {
@@ -347,7 +347,7 @@ public class UserServiceImpl implements UserService {
         if (oldEmail == null){
             LambdaUpdateWrapper<PbUserRole> luw = new LambdaUpdateWrapper<>();
             luw.eq(PbUserRole::getUserId,user.getId())
-                .set(PbUserRole::getRoleId, RoleConstant.NORMAL_USER_ROLE_ID);
+                    .set(PbUserRole::getRoleId, RoleConstant.NORMAL_USER_ROLE_ID);
             userRoleMapper.update(null, luw);
         }
 
@@ -423,7 +423,6 @@ public class UserServiceImpl implements UserService {
         User user = SecurityContextUtil.getUser();
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user, userInfoVO);
-        userInfoVO.setAvatarUrl(fileService.generateAvatarUrl(user.getAvatar()));
         return userInfoVO;
     }
 

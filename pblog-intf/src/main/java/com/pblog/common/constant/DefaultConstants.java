@@ -3,8 +3,8 @@ package com.pblog.common.constant;
 
 public class DefaultConstants {
 
-
-    public static final String DEFAULT_AVATAR_FILENAME = "avatars/0/default-avatar.jpg";
+//    http://192.168.150.103:9000/pblog/avatars/1/20251204/b_06664a7452c07b2ba68877312b7f0785.jpg
+    public static final String DEFAULT_AVATAR_FILENAME = "http://192.168.150.103:9000/pblog/avatars/0/default-avatar.png";
 
     // 0代表启用，1代表禁用
     public static final String DEFAULT_STATUS = "0";

@@ -47,7 +47,7 @@ public class User implements Serializable {
     /**
      * 用户头像URL
      */
-    private String avatar;
+    private String avatarUrl;
 
     /**
      * 账号状态（0正常 1禁用）
