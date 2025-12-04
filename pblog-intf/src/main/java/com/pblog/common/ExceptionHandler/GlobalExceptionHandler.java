@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
 
     // -------------------------- 1. 处理自定义业务异常 --------------------------
     @ExceptionHandler(BusinessException.class)
-    public ResponseResult handleBusinessException(BusinessException e, HttpServletResponse response) {
+    public ResponseResult<String> handleBusinessException(BusinessException e, HttpServletResponse response) {
         log.info("业务异常：{}", e.getMessage());
         // 使用ResponseResult.error(String message)，默认code=400
         return ResponseResult.error(e.getMessage());
@@ -59,7 +59,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseResult handleRuntimeException(RuntimeException e, HttpServletResponse response) {
-        log.info("运行时异常：{}", e.getMessage());
+//        log.info("运行时异常：{}", e.getMessage());
+        log.error("运行时异常：{}，异常信息：{}",
+                e.getClass().getName(), e.getMessage(), e);
         // 使用ResponseResult.error(String message)，默认code=400
         return ResponseResult.error(400,e.getMessage());
     }

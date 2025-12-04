@@ -89,6 +89,7 @@ public class SecurityConfig {
                     "/code/picture/generate",
                     "/admin/login",
                     "/admin/addPerson" ,     // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+                    "/category/all"
                 ).permitAll()
 
                 // 游客权限（ROLE_VISITOR）
@@ -105,8 +106,8 @@ public class SecurityConfig {
                         "/admin/**",          // 简化：所有/admin/*路径
                         "/menu/**",           // 所有/menu/*路径
                         "/role/**",           // 所有/role/*路径
-                        "/category/**"        // 所有/category/*路径
                         "/category/**" ,      // 所有/category/*路径
+                        "/article/**",
                         "/file/uploadImage"  // 上传文章图片
                 ).hasAnyRole("AUDITOR", "SUPER")
 
