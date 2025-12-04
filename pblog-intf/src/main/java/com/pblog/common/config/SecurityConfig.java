@@ -80,17 +80,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 无需权限路径
                 .requestMatchers(
-                        "/error",
-                        "/hello",
-                        "/user/passwordLogin",
-                        "/user/register",
-                        "/user/emailCodeLogin",
-                        "/user/emailLogin",
-                        "/user/resetPassword",
-                        "/code/email/sendEmail",
-                        "/code/picture/generate",
-                        "/admin/login",
-                        "/admin/addPerson"      // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+                    "/error",
+                    "/hello",
+                    "/user/passwordLogin",
+                    "/user/emailLoginOrRegister",
+                    "/user/getUserInfoByUserName",
+                    "/code/email/sendEmail",
+                    "/code/picture/generate",
+                    "/admin/login",
+                    "/admin/addPerson" ,     // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
                 ).permitAll()
 
                 // 游客权限（ROLE_VISITOR）
@@ -108,6 +106,8 @@ public class SecurityConfig {
                         "/menu/**",           // 所有/menu/*路径
                         "/role/**",           // 所有/role/*路径
                         "/category/**"        // 所有/category/*路径
+                        "/category/**" ,      // 所有/category/*路径
+                        "/file/uploadImage"  // 上传文章图片
                 ).hasAnyRole("AUDITOR", "SUPER")
 
                 // 剩余请求需认证

@@ -15,7 +15,7 @@ public interface UserService {
 
     Map<String, String> emailLogin(EmailLoginDTO emailLoginDTO);
 
-    Map<String, String> emailCodeLogin(EmailCodeDTO emailCodeLoginDTO);
+    Map<String, String> emailLoginOrRegister(EmailCodeDTO emailCodeLoginDTO);
 
     String register(RegisterDTO registerDTO);
 
@@ -32,4 +32,6 @@ public interface UserService {
     String deleteAccount(HttpServletRequest request, HttpServletResponse response);
 
     UserInfoVO getUserInfo();
+
+    UserInfoVO getUserInfoByUserName(String username);
 }

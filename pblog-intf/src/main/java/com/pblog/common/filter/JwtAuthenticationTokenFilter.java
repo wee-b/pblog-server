@@ -29,14 +29,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/error",
             "/hello",
             "/user/passwordLogin",
-            "/user/register",
-            "/user/emailCodeLogin",
-            "/user/emailLogin",
-            "/user/resetPassword",
+            "/user/emailLoginOrRegister",
+            "/user//getUserInfoByUserName",
             "/code/email/sendEmail",
             "/code/picture/generate",
             "/admin/login",
             "/admin/addPerson"      // TODO "/admin/addPerson" 后续移除白名单，只有超管才能注册管理员
+            "/article/queryById/**",
     );
 
     private final StringRedisTemplate stringRedisTemplate;

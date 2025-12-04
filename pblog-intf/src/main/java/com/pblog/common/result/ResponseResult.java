@@ -35,8 +35,25 @@ public class ResponseResult<T> {
         return new ResponseResult<>(200, "操作成功");
     }
 
+
+    public static <T> ResponseResult<T> success(String message) {
+        return new ResponseResult<>(200, message);
+    }
+
     public static <T> ResponseResult<T> success(T data) {
         return new ResponseResult<>(200, "操作成功", data);
+    }
+
+    public static <T> ResponseResult<T> successMessage(String message) {
+        return new ResponseResult<>(200, message);
+    }
+
+    public static <T> ResponseResult<T> successData(T data) {
+        return new ResponseResult<>(200, "操作成功", data);
+    }
+
+    public static <T> ResponseResult<T> successMessageData(String message,T data) {
+        return new ResponseResult<>(200, message, data);
     }
 
     public static <T> ResponseResult<T> error(int code, String message) {

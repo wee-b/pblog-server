@@ -30,46 +30,17 @@ public class UserController {
         return ResponseResult.success(map);
     }
 
-    /**
-     * 邮箱登录
-     */
-    @PostMapping("/emailLogin")
-    public ResponseResult<Map<String,String>> emailLogin(@RequestBody EmailLoginDTO emailLoginDTO){
-        log.info("收到邮箱密码登录请求:{}", emailLoginDTO);
-        Map<String,String> map =  userService.emailLogin(emailLoginDTO);
-        return ResponseResult.success(map);
-    }
 
     /**
      * 邮箱验证码登录
      */
-    @PostMapping("/emailCodeLogin")
-    public ResponseResult emailCodeLogin(@RequestBody EmailCodeDTO emailCodeDTO){
+    @PostMapping("/emailLoginOrRegister")
+    public ResponseResult emailLoginOrRegister(@RequestBody EmailCodeDTO emailCodeDTO){
         log.info("收到邮箱验证码登录请求:{}", emailCodeDTO);
-        Map<String,String> map =  userService.emailCodeLogin(emailCodeDTO);
+        Map<String,String> map =  userService.emailLoginOrRegister(emailCodeDTO);
         return ResponseResult.success(map);
     }
 
-    /**
-     * 注册可以有邮箱也可以没有邮箱，没有邮箱视为游客
-     * @param registerDTO
-     * @return
-     * @throws Exception
-     */
-    @PostMapping("/register")
-    public ResponseResult register(@RequestBody RegisterDTO registerDTO){
-        String username = userService.register(registerDTO);
-        return ResponseResult.success(username);
-    }
-
-    /**
-     * 重置密码，必须要有邮箱，未登陆状态下
-     */
-    @PutMapping("/resetPassword")
-    public ResponseResult resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
-        String username = userService.resetPassword(resetPasswordDTO);
-        return ResponseResult.success(username);
-    }
 
     // ========================  登录状态下的请求  ========================
     /**
@@ -124,6 +95,50 @@ public class UserController {
     public ResponseResult<UserInfoVO> getUserInfo(){
         UserInfoVO userInfo = userService.getUserInfo();
         return ResponseResult.success(userInfo);
+    }
+
+    /**
+     * 获取用户资料
+     */
+    @GetMapping("/getUserInfoByUserName")
+    public ResponseResult<UserInfoVO> getUserInfoByUserName(
+            @RequestParam(value = "username") String username){
+        UserInfoVO userInfo = userService.getUserInfoByUserName(username);
+        return ResponseResult.success(userInfo);
+    }
+
+
+
+    // =====================================   弃用接口   =====================================
+    /**
+     * 邮箱登录
+     */
+//    @PostMapping("/emailLogin")  关闭邮箱+ 密码登录方式
+    public ResponseResult<Map<String,String>> emailLogin(@RequestBody EmailLoginDTO emailLoginDTO){
+        log.info("收到邮箱密码登录请求:{}", emailLoginDTO);
+        Map<String,String> map =  userService.emailLogin(emailLoginDTO);
+        return ResponseResult.success(map);
+    }
+
+    /**
+     * 注册可以有邮箱也可以没有邮箱，没有邮箱视为游客
+     * @param registerDTO
+     * @return
+     * @throws Exception
+     */
+//    @PostMapping("/register")
+    public ResponseResult register(@RequestBody RegisterDTO registerDTO){
+        String username = userService.register(registerDTO);
+        return ResponseResult.success(username);
+    }
+
+    /**
+     * 重置密码，必须要有邮箱，未登陆状态下
+     */
+//    @PutMapping("/resetPassword")
+    public ResponseResult resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO){
+        String username = userService.resetPassword(resetPasswordDTO);
+        return ResponseResult.success(username);
     }
 
 }
