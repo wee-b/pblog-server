@@ -47,7 +47,7 @@ public class Series implements Serializable {
     /**
      * 创建者ID（关联pb_user）
      */
-    private Integer authorId;
+    private String authorUsername;
 
     /**
      * 删除标志（0存在 1删除）

@@ -30,9 +30,9 @@ public class Comment implements Serializable {
     private Integer articleId;
 
     /**
-     * 评论用户ID（关联pb_user）
+     * 评论用户账号（关联pb_user）
      */
-    private Integer userId;
+    private String username;
 
     /**
      * 父评论ID（自关联）

@@ -30,7 +30,7 @@ public class Category implements Serializable {
     private String categoryName;
 
     /**
-     * 父分类ID（0为一级分类）
+     * 父分类ID，0代表分类，1、2代表tag
      */
     private Integer parentId;
 

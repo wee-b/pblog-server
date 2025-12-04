@@ -25,9 +25,9 @@ public class Like implements Serializable {
     private Integer id;
 
     /**
-     * 用户ID（关联pb_user）
+     * 用户账号（关联pb_user）
      */
-    private Integer userId;
+    private String username;
 
     /**
      * 文章ID（关联pb_article）

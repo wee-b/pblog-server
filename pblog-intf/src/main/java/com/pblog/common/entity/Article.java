@@ -47,10 +47,13 @@ public class Article implements Serializable {
     /**
      * 作者ID（关联pb_user）
      */
-    private Integer authorId;
+    @TableField("author_username")
+    private String authorUsername;
+    @TableField("author_nickname")
+    private String authorNickName;
 
     /**
-     * 文章状态（0草稿 1已发布 2已下架）
+     * 文章状态（0草稿 1已发布 2待审核）
      */
     private String status;
 
@@ -72,12 +75,13 @@ public class Article implements Serializable {
     /**
      * 是否置顶（0否 1是）
      */
-    private String isSticky;
+    private String sticky;
 
+    // TODO 设置定时任务
     /**
      * 是否推荐（0否 1是）
      */
-    private String isFeatured;
+    private String featured;
 
     /**
      * 发布时间

@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 文章与分类关联表
@@ -34,21 +33,4 @@ public class AcRelation implements Serializable {
      */
     private Integer categoryId;
 
-    /**
-     * 删除标志（0存在 1删除）
-     */
-    @TableLogic
-    private String delFlag;
-
-    /**
-     * 创建者
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Integer createBy;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
 }
