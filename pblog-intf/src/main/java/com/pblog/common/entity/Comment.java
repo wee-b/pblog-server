@@ -26,6 +26,7 @@ public class Comment implements Serializable {
 
     /**
      * 文章ID（关联pb_article）
+     * 文章id=0代表为留言板数据
      */
     private Integer articleId;
 
@@ -35,9 +36,19 @@ public class Comment implements Serializable {
     private String username;
 
     /**
+     * 根评论ID（自关联）
+     */
+    private Integer rootId;
+
+    /**
      * 父评论ID（自关联）
      */
     private Integer parentId;
+
+    /**
+     * 发布父评论的人的账号
+     */
+    private String toReplyUsername;
 
     /**
      * 评论内容
@@ -63,7 +74,7 @@ public class Comment implements Serializable {
     /**
      * 评论时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime createTime;
 
     /**

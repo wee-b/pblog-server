@@ -47,18 +47,18 @@ public class UserController {
      * 修改用户基本信息,登录状态下
      */
     @PutMapping("/updateInfo")
-    public ResponseResult updateInfo(@RequestBody UserDTO userDTO){
-        String username = userService.updateInfo(userDTO);
-        return ResponseResult.success(username);
+    public ResponseResult<Map<String, String>> updateInfo(@RequestBody UserDTO userDTO){
+        Map<String, String> res = userService.updateInfo(userDTO);
+        return ResponseResult.success(res);
     }
 
     /**
      * 修改/添加邮箱,登录状态下
      */
     @PutMapping("/updateEmail")
-    public ResponseResult updateEmail(@RequestBody EmailCodeDTO emailCodeDTO){
-        String username = userService.updateEmail(emailCodeDTO);
-        return ResponseResult.success(username);
+    public ResponseResult<String> updateEmail(@RequestBody EmailCodeDTO emailCodeDTO){
+        userService.updateEmail(emailCodeDTO);
+        return ResponseResult.success();
     }
 
     /**
@@ -95,6 +95,15 @@ public class UserController {
     public ResponseResult<UserInfoVO> getUserInfo(){
         UserInfoVO userInfo = userService.getUserInfo();
         return ResponseResult.success(userInfo);
+    }
+
+    /**
+     * 获取用户资料
+     */
+    @GetMapping("/getEmail")
+    public ResponseResult<String> getEmail(){
+        String res = userService.getEmail();
+        return ResponseResult.successData(res);
     }
 
     /**

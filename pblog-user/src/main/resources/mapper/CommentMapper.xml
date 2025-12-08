@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pblog.user.mapper.CommentMapper">
+
+    <!-- 1. 修改CommentVOMap：新增toReplayUsername字段映射 -->
+    <resultMap id="CommentVOMap" type="com.pblog.common.vo.CommentVO">
+        <id column="id" property="id"/>
+        <result column="to_reply_username" property="toReplyUsername"/> <!-- 新增字段映射 -->
+        <result column="root_id" property="rootId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+
+        <!-- 仍排除bio字段 -->
+        <association property="userInfoVO" javaType="com.pblog.common.vo.UserInfoVO">
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatar_url" property="avatarUrl"/>
+        </association>
+    </resultMap>
+
+    <!-- 2. 修改selectAllByArticleId：SQL中新增to_replay_username字段查询 -->
+    <select id="selectAllByArticleId" resultMap="CommentVOMap">
+        SELECT
+            c.id,
+            c.to_reply_username, -- 新增字段
+            c.root_id,
+            c.parent_id,
+            c.content,
+            c.like_count,
+            c.create_time,
+            c.username, -- 保留用户账号用于关联用户信息
+            u.nickname,
+            u.avatar_url
+        FROM pb_comment c
+                 LEFT JOIN pb_user u ON c.username = u.username
+        WHERE c.article_id = #{articleId} and c.status = '1'
+        ORDER BY c.create_time DESC
+    </select>
+
+    <!-- 其他原有映射（CommentFromMeVOMap/CommentForMeVOMap）保持不变 -->
+    <resultMap id="CommentFromMeVOMap" type="com.pblog.common.vo.CommentFromMeVO">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="to_reply_username" property="toReplyUsername"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <resultMap id="CommentForMeVOMap" type="com.pblog.common.vo.CommentForMeVO">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+        <association property="userInfoVO" javaType="com.pblog.common.vo.UserInfoVO">
+            <result column="comment_username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatar_url" property="avatarUrl"/>
+        </association>
+    </resultMap>
+
+    <!-- 其他原有SQL（selectCommentsFromMe/selectCommentsForMe）保持不变 -->
+    <select id="selectCommentsFromMe" resultMap="CommentFromMeVOMap">
+        SELECT
+            c.id,
+            c.article_id,
+            a.title AS article_title,
+            c.parent_id,
+            c.to_reply_username,
+            c.content,
+            c.like_count,
+            c.create_time
+        FROM pb_comment c
+                 LEFT JOIN pb_article a ON c.article_id = a.id
+        WHERE c.username = #{username}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="selectCommentsForMe" resultMap="CommentForMeVOMap">
+        SELECT
+            c.id,
+            c.article_id,
+            a.title AS article_title,
+            c.parent_id,
+            c.content,
+            c.like_count,
+            c.create_time,
+            c.username AS comment_username,
+            u.nickname,
+            u.avatar_url
+        FROM pb_comment c
+                 LEFT JOIN pb_article a ON c.article_id = a.id
+                 LEFT JOIN pb_user u ON c.username = u.username
+        WHERE c.to_reply_username = #{username}
+        ORDER BY c.create_time DESC
+    </select>
+
+</mapper>

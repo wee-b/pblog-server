@@ -84,7 +84,7 @@ public class SecurityConfig {
                     "/hello",
                     "/user/passwordLogin",
                     "/user/emailLoginOrRegister",
-                    "/user/getUserInfoByUserName",
+                    "/user/getUserInfoByUserName/**",
                     "/code/email/sendEmail",
                     "/code/picture/generate",
                     "/admin/login",
@@ -92,17 +92,26 @@ public class SecurityConfig {
                     "/article/pageQuery",
                     "/article/queryById/**",
                     "/article/getFeaturedArticles",
-                    "/category/all"
+                    "/category/all",
+                    "/comment/all/{id}",
+                    "/comment/insertRemark"
                 ).permitAll()
 
                 // 游客权限（ROLE_VISITOR）
                 .requestMatchers(
-                        "/user/logout", "/user/updateInfo", "/user/updateEmail",
-                        "/user/forgetPassword", "/user/getUserInfo", "/user/deleteAccount"
+                        "/user/logout",
+                        "/user/updateInfo"
                 ).hasRole("VISITOR") // 只需配置最低权限
 
                 // 普通用户权限（ROLE_USER）
-                .requestMatchers("/file/uploadAvatar").hasRole("USER")
+                .requestMatchers(
+                        "/user/updateEmail",
+                        "/user/forgetPassword",
+                        "/user/getUserInfo",
+                        "/user/deleteAccount",
+                        "/file/uploadAvatar",
+                        "user/getEmail"
+                ).hasRole("USER")
 
                 // 管理员权限（ROLE_AUDITOR 或 ROLE_SUPER）
                 .requestMatchers(
@@ -111,7 +120,8 @@ public class SecurityConfig {
                         "/role/**",           // 所有/role/*路径
                         "/category/**" ,      // 所有/category/*路径
                         "/article/**",
-                        "/file/uploadImage"  // 上传文章图片
+                        "/file/uploadImage",  // 上传文章图片
+                        "/comment/**"
                 ).hasAnyRole("AUDITOR", "SUPER")
 
                 // 剩余请求需认证
@@ -140,7 +150,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 允许的前端域名（生产环境需指定具体域名，不要用*）
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:5174"));
         // 允许的请求方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头

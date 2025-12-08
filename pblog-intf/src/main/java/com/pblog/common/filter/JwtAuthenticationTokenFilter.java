@@ -30,7 +30,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/hello",
             "/user/passwordLogin",
             "/user/emailLoginOrRegister",
-            "/user//getUserInfoByUserName",
+            "/user/getUserInfoByUserName/**",
             "/code/email/sendEmail",
             "/code/picture/generate",
             "/admin/login",
@@ -38,7 +38,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/article/pageQuery",
             "/article/queryById/**",
             "/article/getFeaturedArticles",
-            "/category/all"
+            "/category/all",
+            "/comment/all/{id}",
+            "/comment/insertRemark"
     );
 
     private final StringRedisTemplate stringRedisTemplate;

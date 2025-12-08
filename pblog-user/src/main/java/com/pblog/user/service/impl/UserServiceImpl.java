@@ -326,15 +326,15 @@ public class UserServiceImpl implements UserService {
 
     // 需要登录
     @Override
-    public String updateInfo(UserDTO userDTO) {
+    public Map<String, String> updateInfo(UserDTO userDTO) {
 
         String username = SecurityContextUtil.getUsername();
 
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
-                .set(User::getEmail, userDTO.getNickname())
-                .set(User::getEmail, userDTO.getAvatarUrl())
-                .set(User::getEmail, userDTO.getBio());
+                .set(User::getNickname, userDTO.getNickname())
+                .set(User::getAvatarUrl, userDTO.getAvatarUrl())
+                .set(User::getBio, userDTO.getBio());
 
         // TODO 同步更新文章里面作者的nickname
 
@@ -343,7 +343,15 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("用户信息更新失败");
         }
 
-        return username;
+        // 返回更新后的用户json数据
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(userDTO, userInfoVO);
+        userInfoVO.setUsername(username);
+        String userInfoJson = JSON.toJSONString(userInfoVO);
+        Map<String, String> map = new HashMap<>();
+        map.put("userInfoJson",userInfoJson);
+
+        return map;
     }
 
     @Override
@@ -468,6 +476,12 @@ public class UserServiceImpl implements UserService {
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user, userInfoVO);
         return userInfoVO;
+    }
+
+    @Override
+    public String getEmail() {
+        String email = SecurityContextUtil.getUser().getEmail();
+        return email;
     }
 
 

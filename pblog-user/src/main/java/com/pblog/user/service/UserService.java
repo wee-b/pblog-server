@@ -21,7 +21,7 @@ public interface UserService {
 
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
 
-    String updateInfo(UserDTO userDTO);
+    Map<String, String> updateInfo(UserDTO userDTO);
 
     String updateEmail(EmailCodeDTO emailCodeDTO);
 
@@ -34,4 +34,7 @@ public interface UserService {
     UserInfoVO getUserInfo();
 
     UserInfoVO getUserInfoByUserName(String username);
+
+    String getEmail();
+
 }
