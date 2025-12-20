@@ -33,8 +33,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/user/getUserInfoByUserName/**",
             "/code/email/sendEmail",
             "/code/picture/generate",
-            "/admin/login",
-            "/admin/addPerson" ,     // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+
+            "/admin/passwordLogin",
+            "/admin/register" ,
             "/article/pageQuery",
             "/article/queryById/**",
             "/article/getFeaturedArticles",

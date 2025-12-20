@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.pblog.user.mapper.ArticleMapper">
+<mapper namespace="com.pblog.admin.mapper.ArticleMapper">
 
 
     <!-- 1. 分页查询：修复关联逻辑、去重方式、字段别名 -->
@@ -34,9 +34,6 @@
             </foreach>
         </if>
         <where>
-            <if test="query.username != null and query.username != ''">
-                a.author_username = #{query.username}
-            </if>
             <!-- 筛选条件：确保只返回符合分类条件的文章（无分类筛选时返回所有） -->
             <if test="query.categoryIds != null and query.categoryIds.size() > 0">
                 AND EXISTS (

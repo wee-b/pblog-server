@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pblog.admin.mapper.CommentMapper">
+
+    <!-- 1. 原有 CommentVOMap 保留（供其他方法使用） -->
+    <resultMap id="CommentVOMap" type="com.pblog.common.vo.CommentVO">
+        <id column="id" property="id"/>
+        <result column="to_reply_username" property="toReplyUsername"/>
+        <result column="root_id" property="rootId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+        <association property="userInfoVO" javaType="com.pblog.common.vo.UserInfoVO">
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatar_url" property="avatarUrl"/>
+        </association>
+    </resultMap>
+
+    <!-- 2. 新增 CommentDetailVOMap：继承 CommentVOMap 并添加新字段 -->
+    <resultMap id="CommentDetailVOMap" type="com.pblog.admin.vo.CommentDetailVO" extends="CommentVOMap">
+        <result column="article_id" property="articleId"/>       <!-- 新增：文章ID -->
+        <result column="article_title" property="articleTitle"/> <!-- 新增：文章标题 -->
+        <result column="status" property="status"/>             <!-- 新增：评论状态 -->
+    </resultMap>
+
+    <!-- 3. 修改 selectCommentPage：使用新的 resultMap + 查询新字段 -->
+    <select id="selectCommentPage" resultMap="CommentDetailVOMap">
+        SELECT
+        c.id,
+        c.to_reply_username,
+        c.root_id,
+        c.parent_id,
+        c.content,
+        c.like_count,
+        c.create_time,
+        c.username,
+        c.article_id,          <!-- 新增：查询评论的文章ID -->
+        c.status,              <!-- 新增：查询评论状态 -->
+        a.title AS article_title, <!-- 新增：关联文章表查标题 -->
+        u.nickname,
+        u.avatar_url
+        FROM pb_comment c
+        LEFT JOIN pb_user u ON c.username = u.username
+        LEFT JOIN pb_article a ON c.article_id = a.id <!-- 新增：关联文章表 -->
+        WHERE 1=1
+        <!-- 评论状态条件：status != -1 时生效 -->
+        <if test="query.status != null and query.status != '-1'">
+            AND c.status = #{query.status}
+        </if>
+        <!-- 文章ID条件：非空时生效 -->
+        <if test="query.articleId != null">
+            AND c.article_id = #{query.articleId}
+        </if>
+        <!-- 开始时间条件：非空时生效 -->
+        <if test="query.startTime != null">
+            AND c.create_time &gt;= #{query.startTime}
+        </if>
+        <!-- 结束时间条件：非空时生效 -->
+        <if test="query.endTime != null">
+            AND c.create_time &lt;= #{query.endTime}
+        </if>
+        <!-- 排序：根据create_time，方向由sortDir决定 -->
+        ORDER BY c.create_time ${query.sortDir}
+    </select>
+
+    <!-- 其他原有映射和SQL保持不变 -->
+    <resultMap id="CommentFromMeVOMap" type="com.pblog.common.vo.CommentFromMeVO">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="to_reply_username" property="toReplyUsername"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <resultMap id="CommentForMeVOMap" type="com.pblog.common.vo.CommentForMeVO">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="article_title" property="articleTitle"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+        <association property="userInfoVO" javaType="com.pblog.common.vo.UserInfoVO">
+            <result column="comment_username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatar_url" property="avatarUrl"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllByArticleId" resultMap="CommentVOMap">
+        SELECT
+            c.id,
+            c.to_reply_username,
+            c.root_id,
+            c.parent_id,
+            c.content,
+            c.like_count,
+            c.create_time,
+            c.username,
+            u.nickname,
+            u.avatar_url
+        FROM pb_comment c
+                 LEFT JOIN pb_user u ON c.username = u.username
+        WHERE c.article_id = #{articleId} and c.status = '1'
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="selectCommentsFromMe" resultMap="CommentFromMeVOMap">
+        SELECT
+            c.id,
+            c.article_id,
+            a.title AS article_title,
+            c.parent_id,
+            c.to_reply_username,
+            c.content,
+            c.like_count,
+            c.create_time
+        FROM pb_comment c
+                 LEFT JOIN pb_article a ON c.article_id = a.id
+        WHERE c.username = #{username}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="selectCommentsForMe" resultMap="CommentForMeVOMap">
+        SELECT
+            c.id,
+            c.article_id,
+            a.title AS article_title,
+            c.parent_id,
+            c.content,
+            c.like_count,
+            c.create_time,
+            c.username AS comment_username,
+            u.nickname,
+            u.avatar_url
+        FROM pb_comment c
+                 LEFT JOIN pb_article a ON c.article_id = a.id
+                 LEFT JOIN pb_user u ON c.username = u.username
+        WHERE c.to_reply_username = #{username}
+        ORDER BY c.create_time DESC
+    </select>
+</mapper>

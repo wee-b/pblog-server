@@ -52,7 +52,7 @@ public class Series implements Serializable {
     /**
      * 删除标志（0存在 1删除）
      */
-    @TableLogic
+//    @TableLogic
     private String delFlag;
 
     /**

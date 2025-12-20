@@ -87,8 +87,9 @@ public class SecurityConfig {
                     "/user/getUserInfoByUserName/**",
                     "/code/email/sendEmail",
                     "/code/picture/generate",
-                    "/admin/login",
-                    "/admin/addPerson" ,     // TODO "/admin/addPerson" 后续调整为SUPER权限，只有超管才能注册管理员
+
+                    "/admin/passwordLogin",
+                    "/admin/register" ,
                     "/article/pageQuery",
                     "/article/queryById/**",
                     "/article/getFeaturedArticles",
@@ -150,7 +151,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 允许的前端域名（生产环境需指定具体域名，不要用*）
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:5174"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:5174","http://localhost:5175"));
         // 允许的请求方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头

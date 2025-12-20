@@ -510,7 +510,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("用户不存在，请检查"+message);
         }
 
-        if(user.getStatus().equals("0")){
+        if(user.getStatus().equals("1")){
             throw new DisabledException("账号已被禁用");
         }
 

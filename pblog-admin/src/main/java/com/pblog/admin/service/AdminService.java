@@ -1,8 +1,8 @@
 package com.pblog.admin.service;
 
 import com.pblog.common.dto.PageQueryDTO;
+import com.pblog.common.dto.RegisterDTO;
 import com.pblog.common.dto.login.PasswordLoginDTO;
-import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
 import com.pblog.common.vo.UserAdminInfoVO;
 
@@ -11,7 +11,9 @@ import java.util.Map;
 
 public interface AdminService {
 
-    Map<String, String> login(PasswordLoginDTO passwordLoginDTO);
+    Map<String, String> passwordLogin(PasswordLoginDTO passwordLoginDTO);
+
+    Map<String, String> register(RegisterDTO registerDTO);
 
     void logout();
 
@@ -20,8 +22,4 @@ public interface AdminService {
     List<UserAdminInfoVO> UserPageQuery(PageQueryDTO pageQueryDTO);
 
     User getUserAllInfo(String username);
-
-    void addPerson(AdminRegisterDTO adminRegisterDTO);
-
-    void updatePerson(AdminRegisterDTO adminRegisterDTO);
 }

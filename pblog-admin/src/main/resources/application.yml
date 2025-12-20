@@ -22,21 +22,6 @@ spring:
       database: ${bin.redis.database}
       password: ${bin.redis.password}
 
-  # 邮箱登录
-  mail:
-    host: smtp.qq.com  # QQ邮箱SMTP服务器（固定）
-    port: 465  # SSL加密专用端口（必须为465，不能用587）
-    username: ${bin.mail.username}
-    password: ${bin.mail.password}  #
-    properties:
-      mail:
-        smtp:
-          ssl:
-            enable: true  # 启用SSL加密（关键）
-          socketFactoryClass: javax.net.ssl.SSLSocketFactory  # SSL工厂类（配合465端口）
-          socketFactory.port: 465  # 明确指定SSL工厂端口（避免端口混乱）
-    default-encoding: UTF-8
-
     # 文件上传设置
     servlet:
       multipart:

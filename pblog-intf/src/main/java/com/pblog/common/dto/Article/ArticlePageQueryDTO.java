@@ -37,6 +37,6 @@ public class ArticlePageQueryDTO extends PageQueryDTO {
             message = "排序字段不合法，支持：publishedAt(发布时间)、viewCount(阅读量)、likeCount(点赞数)、commentCount(评论数)")
     private String sortField;
 
-
+    private String username;
 
 }

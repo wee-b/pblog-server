@@ -2,8 +2,8 @@ package com.pblog.admin.controller;
 
 import com.pblog.admin.service.AdminService;
 import com.pblog.common.dto.PageQueryDTO;
+import com.pblog.common.dto.RegisterDTO;
 import com.pblog.common.dto.login.PasswordLoginDTO;
-import com.pblog.common.dto.admin.AdminRegisterDTO;
 import com.pblog.common.entity.User;
 import com.pblog.common.result.ResponseResult;
 import com.pblog.common.vo.UserAdminInfoVO;
@@ -23,10 +23,16 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    @PostMapping("/login")
+    @PostMapping("/passwordLogin")
     public ResponseResult<Map<String,String>> login(@RequestBody PasswordLoginDTO passwordLoginDTO) {
         log.info("管理员登录请求:{}", passwordLoginDTO);
-        Map<String,String> res = adminService.login(passwordLoginDTO);
+        Map<String,String> res = adminService.passwordLogin(passwordLoginDTO);
+        return ResponseResult.success(res);
+    }
+
+    @PostMapping("/register")
+    public ResponseResult<Map<String, String>> register(@RequestBody RegisterDTO registerDTO){
+        Map<String, String> res = adminService.register(registerDTO);
         return ResponseResult.success(res);
     }
 
@@ -44,12 +50,6 @@ public class AdminController {
         return ResponseResult.success();
     }
 
-    @PostMapping("/addPerson")
-    public ResponseResult addPerson(@RequestBody AdminRegisterDTO adminRegisterDTO) {
-        log.info("管理员注册请求");
-        adminService.addPerson(adminRegisterDTO);
-        return ResponseResult.success();
-    }
 
     @GetMapping("/getUserAllInfo")
     public ResponseResult<User> getUserAllInfo(@RequestParam String username) {
@@ -65,11 +65,11 @@ public class AdminController {
         return ResponseResult.success(res);
     }
 
-    @PutMapping("/updateInfo")
-    public ResponseResult updatePerson(@RequestBody AdminRegisterDTO adminRegisterDTO) {
-        log.info("管理员更新信息请求");
-        adminService.updatePerson(adminRegisterDTO);
-        return ResponseResult.success();
-    }
+//    @PutMapping("/updateInfo")
+//    public ResponseResult updatePerson(@RequestBody AdminRegisterDTO adminRegisterDTO) {
+//        log.info("管理员更新信息请求");
+//        adminService.updatePerson(adminRegisterDTO);
+//        return ResponseResult.success();
+//    }
 
 }

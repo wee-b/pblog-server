@@ -13,6 +13,7 @@ public class DefaultConstants {
     public static final String toInspect = "0";
     public static final String Already_handout = "1";
     public static final String Draft_Status = "2";
+    public static final String Comment_Rejected = "2";
     // 逻辑删除标识: 1代表已删除，0代表未删除
     public static final String DEFAULT_DELFLAG = "0";
     public static final String Deleted_DelFlag = "1";
