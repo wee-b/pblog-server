@@ -29,21 +29,15 @@ public class Like implements Serializable {
      */
     private String username;
 
-    /**
-     * 文章ID（关联pb_article）
-     */
-    private Integer articleId;
 
     /**
-     * 点赞状态（1已点赞 0取消）
+     * 内容ID
      */
-    private String isLiked;
-
+    private Integer targetId;
     /**
-     * 删除标志（0存在 1删除）
+     * 内容类型：0-其他，1-文章，2-评论
      */
-//    @TableLogic
-    private String delFlag;
+    private String targetType;
 
     /**
      * 点赞时间
@@ -51,9 +45,4 @@ public class Like implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.UPDATE)
-    private LocalDateTime updateTime;
 }

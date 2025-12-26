@@ -95,7 +95,8 @@ public class SecurityConfig {
                     "/article/getFeaturedArticles",
                     "/category/all",
                     "/comment/all/{id}",
-                    "/comment/insertRemark"
+                    "/comment/insertRemark",
+                    "/like/count"
                 ).permitAll()
 
                 // 游客权限（ROLE_VISITOR）
@@ -111,7 +112,8 @@ public class SecurityConfig {
                         "/user/getUserInfo",
                         "/user/deleteAccount",
                         "/file/uploadAvatar",
-                        "user/getEmail"
+                        "user/getEmail",
+                        "like/**"
                 ).hasRole("USER")
 
                 // 管理员权限（ROLE_AUDITOR 或 ROLE_SUPER）

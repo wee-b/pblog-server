@@ -150,6 +150,13 @@
             <version>0.4.19</version> <!-- 版本号可使用最新稳定版 -->
         </dependency>
 
+        <!-- RocketMQ Spring Boot Starter（核心依赖） -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
 
     </dependencies>
 
@@ -162,6 +169,7 @@
                     <include>**/*.yaml</include>
                     <include>**/*.properties</include>
                     <include>mapper/**/*.xml</include>
+                    <include>**/*.lua</include>
                 </includes>
                 <filtering>true</filtering>  <!-- 改为 true -->
             </resource>

@@ -41,7 +41,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/article/getFeaturedArticles",
             "/category/all",
             "/comment/all/{id}",
-            "/comment/insertRemark"
+            "/comment/insertRemark",
+            "/like/count"
     );
 
     private final StringRedisTemplate stringRedisTemplate;
